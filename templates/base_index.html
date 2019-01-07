@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+    <style>
+        body{
+            padding-top: 70px;
+        }
+    </style>
+</head>
+<body>
+    <div id="forlogin" v-cloak>
+        <div class="navbar navbar-expand-md bg-light fixed-top">
+            <div class="container-fluid">
+                <ul class="navbar-nav navbar-left nav-pills">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">主页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">通知</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">私信</a>
+                    </li>
+                </ul>
+                <span class="navbar-text text-muted font-weight-bold">
+                    迷你博客
+                </span>
+                <template v-if="logined">
+                    <ul class="navbar-nav navbar-right">
+                        <li><button type="button" class="btn btn-primary">发博客</button></li>
+                        <li><button type="button" v-on:click="to_signout" class="btn btn-danger">注销</button></li>
+                    </ul>
+                </template>
+                <template v-else>
+                    <ul class="navbar-nav navbar-right">
+                        <li>
+                            <input type="text" v-model="user_name_login" class="form-control" placeholder="用户名">
+                        </li>
+                        <li>
+                            <input type="password" v-model="user_password_login" class="form-control" placeholder="密码">
+                        </li>
+                        <li>
+                            <button type="button" v-on:click="post_to_login" class="btn btn-primary">登录</button>
+                        </li>
+                        <li>
+                            <button type="button" v-on:click="to_register" class="btn btn-success">注册</button>
+                        </li>
+                    </ul>
+                </template>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-3">
+                    <div class="card">
+                        <img class="card-img-top" src="http://static.runoob.com/images/mix/img_avatar.png" alt="Card image" style="width:100%">
+                        <div class="card-body">
+                            <h4 class="card-title">{% verbatim %} {{ user_name }} {% endverbatim %}</h4>
+                            <template v-if="logined">
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-primary">粉丝</td>
+                                            <td class="text-primary">关注</td>
+                                            <td class="text-primary">微博</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">{% verbatim %} {{ user_vic_focus }} {% endverbatim %}</td>
+                                            <td class="text-muted">{% verbatim %} {{ user_focus }} {% endverbatim %}</td>
+                                            <td class="text-muted">{% verbatim %} {{ user_posts }} {% endverbatim %}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </template>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <template v-for="p in posts">
+                        <div class="card">
+                            <div  v-on:click="post_dialog_show(p)" class="card-body">
+                                <h4>{% verbatim %} {{ p.poster.username }} {% endverbatim %}</h4>
+                                <p>{% verbatim %} {{ p.time }} {% endverbatim %}</p>
+                                <img v-bind:src="p.img" alt="Card image" style="width:100%;height:300px;">
+                                <p>{% verbatim %} {{ p.content }} {% endverbatim %}</p>
+                            </div>
+                            <div class="card-footer">
+                                <p>点赞数{% verbatim %} {{ p.like }} {% endverbatim %}</p>
+                                <p>阅读量{% verbatim %} {{ p.reading }} {% endverbatim %}</p>
+                            </div>
+                        </div>
+                    </template>
+                    <!--模态框-->
+                    <div class="modal fade" id="myModal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <!-- 模态框头部 -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">{% verbatim %} {{ modal.poster }} {% endverbatim %}</h4>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <!-- 模态框主体 -->
+                                <div class="modal-body">
+                                    <div>{% verbatim %} {{ modal.content }} {% endverbatim %}</div>
+                                    <div>{% verbatim %} {{ modal.time }} {% endverbatim %}</div>
+                                    <div>点赞数{% verbatim %} {{ modal.likes }} {% endverbatim %}</div>
+                                    <div>阅读量{% verbatim %} {{ modal.hits }} {% endverbatim %}</div>
+                                    <button>点赞</button>
+                                    <button>评论</button>
+                                    <template v-for="comment in modal.comments">
+                                        <div>{% verbatim %} {{ comment }} {% endverbatim %}</div>
+                                    </template>
+                                </div>
+                                <!-- 模态框底部 -->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        window.onload = function() {
+            var app = new Vue({
+                el: '#forlogin',
+                data: {
+                    //登录表单数据模型
+                    user_name_login:'',
+                    user_password_login:'',
+
+                    logined: false,//登录状态
+                    //登录用户信息
+                    user_name: '游客',
+                    user_focus: 0,
+                    user_vic_focus: 0,
+                    user_posts: 0,
+                    //微博
+                    posts:[],
+                    lastid:"",
+                    //模态框
+                    modal:{
+                        id:"",
+                        poster: "",
+                        content:"",
+                        img:"",
+                        time:"",
+                        likes:"",
+                        hits:"",
+                        comments:[],
+                        replies:[],
+                    },
+
+                    message:''
+                },
+                watch:{
+                    logined:function (nval, oval) {
+                        if(nval===true){
+                            this.post_user_info();
+                        }
+                    }
+                },
+                methods: {
+                    update: function () {
+                        this.logined = true
+                    },
+                    to_signout:function(){
+                        //注销
+                        window.location.href='/signout';
+                    },
+                    to_register(){
+                        //注册
+                        window.location.href='/signup';
+                    },
+                    post_login_status:function(){
+                        //请求登录状态
+                        this.$http.post('/logstatus',{},{emulateJSON:true}).then(function(res){
+                            if(res.body === "yes") this.logined=true;
+                            else this.logined=false;
+                        },function(){
+                            alert("登录状态请求失败");
+                        });
+                    },
+                    post_to_login(){
+                        //登录
+                        if(this.user_name_login===''||this.user_password_login==='')
+                            alert("登录信息不能为空！");
+                        else{
+                            var json={};//封装json
+                            json["u"]=this.user_name_login;
+                            json["p"]=this.user_password_login;
+                            this.$http.post('/signin',json,{emulateJSON:true}).then(function(res){
+                                if(res.body==="ok")this.logined=true;
+                                else{
+                                    this.logined=false;
+                                    alert("登录失败！");
+                                }
+                            },function(){
+                                alert("登录请求失败");
+                            });
+                        }
+                    },
+                    post_ten_posts:function(){
+                        //获取十篇推文
+                        var json={};
+                        json["userid"]="";
+                        json["num"]="3";
+                        json["lastid"]=this.lastid;
+                        this.$http.post('/getpost',json,{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            for(var p in ps){
+                                this.posts.push({
+                                    id: ps[p].id,
+                                    content: ps[p].content,
+                                    img: ps[p].picture,
+                                    poster: ps[p].poster,
+                                    time: ps[p].time,//发布时间
+                                    like: ps[p].likes,//点赞数
+                                    reading: ps[p].hits//阅读量
+                                });
+                                this.lastid=ps[p].id;
+                            }
+                        },function(){
+                            alert("推文信息请求失败")
+                        });
+                    },
+                    post_user_info(){
+                        //获取登录用户信息
+                        this.$http.post('/userinfo',{},{emulateJSON:true}).then(function(res){
+                            this.user_name=res.body.name;
+                            this.user_focus=res.body.guanzhu;
+                            this.user_vic_focus=res.body.fensi;
+                            this.user_posts=res.body.tuiwen;
+                        },function(){
+                            alert("用户信息请求失败")
+                        });
+                    },
+                    post_dialog_show(p){
+                        this.modal.id=p.id;
+                        this.modal.poster=p.poster.username;
+                        this.modal.content=p.content;
+                        this.modal.likes=p.like;
+                        this.modal.hits=p.reading;
+                        $('#myModal').modal('show');
+                    },
+                    post_comments(){},
+                    post_replies(){}
+                }
+            });
+            app.post_login_status();
+            app.post_ten_posts();
+            window.onscroll = function(){
+                //变量scrollTop是滚动条滚动时，距离顶部的距离
+                var scrollTop = document.documentElement.scrollTop||document.body.scrollTop;
+                //变量windowHeight是可视区的高度
+                var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+                //变量scrollHeight是滚动条的总高度
+                var scrollHeight = (document.documentElement.scrollHeight||document.body.scrollHeight)-1;
+             //滚动条到底部的条件
+            if(scrollTop+windowHeight>=scrollHeight){
+                      //动态加载微博
+               app.post_ten_posts();
+            }   
+          };
+        };
+    </script>
+</body>
+</html>

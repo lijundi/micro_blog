@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" name="Limmy_2016211461">
+	<title>Sign Up Your Contact!</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .container
+        {
+            padding-right: 0%;
+            padding-left: 0%;
+            padding-top: 1%;
+            margin-right: auto;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body style="text-align: center;" class="container">
+    	<form class="navbar-form navbar-fixed-top" role="search" style="text-align: center;">
+        <img style="position:absolute;top: 0%;left: 49%; width: 30px;height:30px; border-radius:15px;overflow: hidden;" src="../static/tou.jpg">
+        <div class="form-group" style="text-align: center;">
+			<input type="text" class="form-control" placeholder="搜索 M_blog" style="position: absolute;left: 60%;top: 0%;">
+		</div>
+		<input type="button" class="btn btn-default"  style="color: white; background: dodgerblue;position:absolute;left: 80%; top: 0%;width: 60px;height:30px;border-radius:30px;" value="发推" oneclick="location.href='/post"/>
+
+	</form>
+        <form name="up" method="POST" class="container">
+            <hr  style="height:1px;border:none;border-top:1px solid #555555;" />
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+	<div style="margin-top: 13%;">{{ str }}</div>
+	<div style="background: #FFFFE0;min-width: 230px;width: 23%;border:1px solid;border-radius:25px;margin-left: auto;margin-right: auto;box-shadow: 10px 10px 5px #888888;">
+		<span><font>Sign Up Your Contact!</font></span>
+
+            {% csrf_token %}
+			<div style="position: relative;">
+				<div style="">
+					<div style="position:relative">
+						<div><font size="2" color="#838B8B">Username</font>&nbsp;</div>
+						<input id="username" type="text" name="u" width="25%" maxlength="26" placeholder="Account" autocomplete="off">
+						<div><font size="2" color="#838B8B">Password</font>&nbsp;</div>
+						<input id="password" type="password" name="p" width="25%" maxlength="16" placeholder="Password"/>
+                        <div><font size="2" color="#838B8B">Confirm Password</font>&nbsp;</div>
+						<input id="confirmpassword" type="text" name="e" width="25%" maxlength="16" placeholder="Email"/>
+					</div>
+					<div style="height:40px;line-height:40px;clear:both;position:relative;">
+						<input type="submit" name="signup" value="Sign Up" />
+					</div>
+				</div>
+			</div>
+
+		<div style="text-align: center;">
+			<span><font size="1" color="gray">Copyright © 2018 limmy.free.wtbuser.cn All Rights Reserved</font></span>
+		</div>
+	</div>
+        </form>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>regisit</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+    <style>
+        body{
+            padding-top: 70px;
+        }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak>
+    <div class="navbar navbar-expand-md bg-light fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-left"></div>
+            <span class="navbar-text text-muted font-weight-bold">
+                    Micro_Blog
+            </span>
+            <div class="navbar-right"></div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="form-group">
+		  <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入用户名 :&nbsp </label>
+		  <input class="form-control" type="text" v-model="u"/>
+		</div>
+         <div class="form-group">
+		  <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入密码 :&nbsp </label>
+		  <input class="form-control" type="password" v-model="p"/>
+		</div>
+        <div class="form-group">
+		  <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入邮箱 :&nbsp </label>
+		  <input class="form-control" type="text" v-model="e"/>
+		</div>
+        <button class="btn btn-success" v-on:click="to_signup">注册</button>
+        <button class="btn btn-success" v-on:click="go_back">返回</button>
+    </div>
+</div>
+<script type="text/javascript">
+var app = new Vue({
+    el: '#app',
+    data: {
+        u:"",
+        p:"",
+        e:"",
+        success:false//注册成功标志
+    },
+    watch: {
+        success: function (nval, oval) {
+            if(nval===true)
+                window.location.href='/';
+        }
+    },
+    methods: {
+        to_signup:function () {
+            //注册
+            if(this.u===""||this.p===""||this.e===""){
+                alert("注册信息不完整！");
+            }
+            else{
+                var atpos=this.e.indexOf("@");
+                var dotpos=this.e.lastIndexOf(".");
+                if (atpos<1 || dotpos<atpos+2 || dotpos+2>=this.e.length){
+                    //邮箱验证
+                    alert("邮箱格式不正确！");
+                }
+                else{
+                    var json={};//封装json
+                    json["u"]=this.u;
+                    json["p"]=this.p;
+                    json["e"]=this.e;
+                    this.$http.post('/signup',json,{emulateJSON:true}).then(function(res){
+                        if(res.body==="error"){
+                            alert("用户名或邮箱已存在！");
+                        }
+                        else{
+                            this.success=true;
+                        }
+                    },function(){
+                            alert("注册请求失败");
+                    });
+                }
+            }
+        },
+        go_back:function () {
+            window.location.href='/';
+        }
+    }
+});
+</script>
+</body>
+</html>
