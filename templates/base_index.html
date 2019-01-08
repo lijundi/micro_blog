@@ -126,13 +126,14 @@
                                         <div>{% verbatim %} {{ comment.poster.username }} {% endverbatim %}</div>
                                         <div>{% verbatim %} {{ comment.time }} {% endverbatim %}</div>
                                         <div>{% verbatim %} {{ comment.content }} {% endverbatim %}</div>
-                                        <button v-on:click="to_reply(comment)">回复</button>
+                                        <button v-on:click="to_reply(comment,comment.id)">回复</button>
                                         <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)">回复折叠</button>
                                         <div v-bind:id="comment.id" class="collapse">
                                             <template v-for="reply in comment.replies">
                                             <div>{% verbatim %} {{ reply.poster.username }} {% endverbatim %}回复{% verbatim %} {{ reply.vic_reply.username }} {% endverbatim %}</div>
                                             <div>{% verbatim %} {{ reply.time }} {% endverbatim %}</div>
                                             <div>{% verbatim %} {{ reply.content }} {% endverbatim %}</div>
+                                            <button v-on:click="to_reply(reply,comment.id)">回复</button>
                                             </template>
                                         </div>
                                     </template>
@@ -290,6 +291,11 @@
                     },
                     open_modal(p){
                         this.post_add_reading(p.id);
+                        for(var i in this.posts){
+                            if(this.posts[i].id===p.id){
+                                this.posts[i].reading+=1;
+                            }
+                        }
                         this.modal.id=p.id;
                         this.modal.poster=p.poster;
                         this.modal.content=p.content;
@@ -304,11 +310,7 @@
                     post_add_reading(id){
                         //增加阅读量
                         this.$http.post('/hits',{id:id},{emulateJSON:true}).then(function(res){
-                            for(var i in this.posts){
-                            if(this.posts[i].id===id){
-                                this.posts[i].reading+=1;
-                            }
-                        }
+
                         },function(){
                             alert("阅读量增加失败")
                         });
@@ -379,10 +381,10 @@
                         this.inputModal.content="";
                         $('#inputModal').modal('show');
                     },
-                    to_reply(comment){
+                    to_reply(cmORrp,id){
                         this.inputModal.type="reply";
-                        this.inputModal.id=comment.id;
-                        this.inputModal.vic_poster=comment.poster;
+                        this.inputModal.id=id;
+                        this.inputModal.vic_poster=cmORrp.poster;
                         this.inputModal.content="";
                         $('#inputModal').modal('show');
                     },
