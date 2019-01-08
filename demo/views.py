@@ -113,12 +113,11 @@ def like(request):
 # @
 @login_required
 def at(request):
-    type = request.POST['t']
     belongs_id = request.POST['b']
     ater = request.user
     vic_at = request.POST['v']
     if(User.objects.filter(id=vic_at).count()>0):
-        a = At.objects.create(type=type,belongs_id=belongs_id,ater=ater,vic_at_id=vic_at)
+        a = At.objects.create(type="",belongs_id=belongs_id,ater=ater,vic_at_id=vic_at)
         a.save()
         n = Notification.objects.create(type="at", receiver_id=vic_at, noti_id=a.id)
         n.save()
@@ -196,8 +195,8 @@ def sendmail(request):
 def verify(request):
     email=request.GET['email']
     code=request.GET['code']
-    if(Check_Code.objects.filter(code=code,email=email,time__lt=timezone.now()).count()>0):
-        return render(request, '吧啦吧啦.html', locals())
+    if(Check_Code.objects.filter(code=code,email=email,time__gt=timezone.now()).count()>0):
+        return render(request, 'reset_password.html', locals())
     else:
         return HttpResponse("error")
 
@@ -206,8 +205,10 @@ def reset(request):
     email=request.POST['email']
     code=request.POST['code']
     p=request.POST['p']
-    if(Check_Code.objects.filter(code=code,email=email,time__lt=timezone.now()).count()>0):
-        User.objects.get(email=email).set_password(p)
+    if(Check_Code.objects.filter(code=code,email=email,time__gt=timezone.now()).count()>0):
+        a=User.objects.get(email=email)
+        a.set_password(p)
+        a.save()
         Check_Code.objects.filter(email=email,code=code).delete()
         return HttpResponse("ok")
     else:
@@ -242,7 +243,6 @@ def get_comment_post(request):
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
-@login_required
 # 阅读量加一
 def hitpp(request):
     id=request.POST['id']

@@ -9,6 +9,7 @@
     <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
     <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
     <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+    <script src="http://momentjs.cn/downloads/moment.js"></script>
     <style>
         body{
             padding-top: 70px;
@@ -45,7 +46,7 @@
                             <input type="text" v-model="user_name_login" class="form-control" placeholder="用户名">
                         </li>
                         <li>
-                            <input type="password" v-model="user_password_login" class="form-control" placeholder="密码">
+                            <input type="password" v-model="user_password_login" v-on:keyup.enter="post_to_login()" class="form-control" placeholder="密码">
                         </li>
                         <li>
                             <button type="button" v-on:click="post_to_login()" class="btn btn-primary">登录</button>
@@ -93,7 +94,7 @@
                         <div class="card">
                             <div  v-on:click="open_modal(p)" class="card-body">
                                 <h4>{% verbatim %} {{ p.poster.username }} {% endverbatim %}</h4>
-                                <p>{% verbatim %} {{ p.time }} {% endverbatim %}</p>
+                                <p>{% verbatim %} {{ p.time | formatDate }} {% endverbatim %}</p>
                                 <img v-bind:src="p.img" style="width:100%;">
                                 <p>{% verbatim %} {{ p.content }} {% endverbatim %}</p>
                             </div>
@@ -116,7 +117,7 @@
                                 <div class="modal-body">
                                     <img class="card-img-top" v-bind:src="modal.img" style="width:100%">
                                     <div>{% verbatim %} {{ modal.content }} {% endverbatim %}</div>
-                                    <div>{% verbatim %} {{ modal.time }} {% endverbatim %}</div>
+                                    <div>{% verbatim %} {{ modal.time | formatDate }} {% endverbatim %}</div>
                                     <div>点赞数{% verbatim %} {{ modal.likes }} {% endverbatim %}</div>
                                     <div>阅读量{% verbatim %} {{ modal.hits }} {% endverbatim %}</div>
                                     <button v-on:click="post_i_like()">点赞</button>
@@ -127,14 +128,14 @@
                                     <template v-for="comment in modal.comments">
                                         <hr>
                                         <div>{% verbatim %} {{ comment.poster.username }} {% endverbatim %}</div>
-                                        <div>{% verbatim %} {{ comment.time }} {% endverbatim %}</div>
+                                        <div>{% verbatim %} {{ comment.time | formatDate }} {% endverbatim %}</div>
                                         <div>{% verbatim %} {{ comment.content }} {% endverbatim %}</div>
                                         <button v-on:click="to_reply(comment,comment.id)">回复</button>
                                         <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)">回复折叠</button>
                                         <div v-bind:id="comment.id" class="collapse">
                                             <template v-for="reply in comment.replies">
                                             <div>{% verbatim %} {{ reply.poster.username }} {% endverbatim %}回复{% verbatim %} {{ reply.vic_reply.username }} {% endverbatim %}</div>
-                                            <div>{% verbatim %} {{ reply.time }} {% endverbatim %}</div>
+                                            <div>{% verbatim %} {{ reply.time | formatDate }} {% endverbatim %}</div>
                                             <div>{% verbatim %} {{ reply.content }} {% endverbatim %}</div>
                                             <button v-on:click="to_reply(reply,comment.id)">回复</button>
                                             </template>
@@ -199,12 +200,11 @@
         </div>
     </div>
     <script type="text/javascript">
-        //var moment=require('moment');
-       // Vue.filter('formatDate', function (value) {
-           // if(value){
-                //return moment(String(value)).format('MM/DD/YYYY hh:mm');
-           // }
-        //});
+        Vue.filter('formatDate', function (value) {
+            if(value){
+                return moment(String(value)).format('LLL');
+            }
+        });
         //window.onload = function() {
             var app = new Vue({
                 el: '#app',
@@ -334,7 +334,7 @@
                         });
                     },
                     open_modal(p){
-                        if(this.logined===true){
+                        //if(this.logined===true){
                             this.post_add_reading(p.id);
                             for(var i in this.posts){
                                 if(this.posts[i].id===p.id){
@@ -351,7 +351,7 @@
                             this.modal.comments=[];
                             this.post_comments(p.id);
                             $('#myModal').modal('show');
-                        }
+                        //}
                     },
                     post_add_reading(id){
                         //增加阅读量
@@ -474,7 +474,7 @@
                             this.postModal_check_at_input();
                             if(this.postModal.allow_post===true){//可以发送
                                 this.post_postModal_post();
-                                this.post_at(this.postModal.at_list,this.postModal.self_id,"");
+                                this.post_at(this.postModal.at_list,this.postModal.self_id);
                             }
                             //$('#postModal').modal('hide');
                             window.location.href='/';//直接刷页面
@@ -492,10 +492,10 @@
                             alert("推文发送失败")
                         });
                     },
-                    post_at(at_list, belong_id, type){
+                    post_at(at_list, belong_id){
                         //发送@
                         for(var at in at_list){
-                            this.$http.post('/at',{t:type,b:belong_id,v:at.id},{emulateJSON:true}).then(function(res){
+                            this.$http.post('/at',{b:belong_id,v:at.id},{emulateJSON:true}).then(function(res){
 
                             },function(){
 
