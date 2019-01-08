@@ -289,11 +289,7 @@
                         });
                     },
                     open_modal(p){
-                        for(var i in this.posts){
-                            if(this.posts[i].id===p.id){
-                                this.posts[i].reading+=1;
-                            }
-                        }
+                        this.post_add_reading(p.id);
                         this.modal.id=p.id;
                         this.modal.poster=p.poster;
                         this.modal.content=p.content;
@@ -304,6 +300,18 @@
                         this.modal.comments=[];
                         this.post_comments(p.id);
                         $('#myModal').modal('show');
+                    },
+                    post_add_reading(id){
+                        //增加阅读量
+                        this.$http.post('/hits',{id:id},{emulateJSON:true}).then(function(res){
+                            for(var i in this.posts){
+                            if(this.posts[i].id===id){
+                                this.posts[i].reading+=1;
+                            }
+                        }
+                        },function(){
+                            alert("阅读量增加失败")
+                        });
                     },
                     post_comments(id){
                         //获取推文所属评论
@@ -381,11 +389,16 @@
                     post_i_like(){
                         //点赞
                         this.$http.post('/like',{v:this.modal.id},{emulateJSON:true}).then(function(res){
-                            this.modal.likes+=1;
-                            for(var i in this.posts){
-                                if(this.posts[i].id===this.modal.id){
-                                    this.posts[i].like+=1;
+                            if(res.body==="ok"){
+                                this.modal.likes+=1;
+                                for(var i in this.posts){
+                                    if(this.posts[i].id===this.modal.id){
+                                        this.posts[i].like+=1;
+                                    }
                                 }
+                            }
+                            else{
+                                alert("已点赞！")
                             }
                         },function(){
                             alert("点赞失败")
