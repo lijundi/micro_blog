@@ -93,16 +93,19 @@ def reply(request):
 def like(request):
     liker = request.user
     vic_like = request.POST['v']
-    l = Like.objects.create(liker=liker,vic_like_id=vic_like)
-    l.save()
-    p = Post.objects.get(id=vic_like)
-    a=p.likes
-    a=a+1
-    p.likes=a
-    p.save()
-    n=Notification.objects.create(type="like",receiver_id=Post.objects.get(id=vic_like).poster.id,noti_id=l.id)
-    n.save()
-    return HttpResponse('ok')
+    if(Like.objects.filter(liker=liker,vic_like_id=vic_like).count()==0):
+        l = Like.objects.create(liker=liker,vic_like_id=vic_like)
+        l.save()
+        p = Post.objects.get(id=vic_like)
+        a=p.likes
+        a=a+1
+        p.likes=a
+        p.save()
+        n=Notification.objects.create(type="like",receiver_id=Post.objects.get(id=vic_like).poster.id,noti_id=l.id)
+        n.save()
+        return HttpResponse('ok')
+    else:
+        return HttpResponse('liked')
 
 # @
 @login_required
@@ -132,11 +135,14 @@ def letter(request):
 def focus(request):
     focuser = request.user
     vic_focus = request.POST['v']
-    f = Focus_Rela.objects.create(focuser=focuser,vic_focus_id=vic_focus)
-    f.save()
-    n = Notification.objects.create(type="focus", receiver_id=vic_focus, noti_id=f.id)
-    n.save()
-    return HttpResponse('ok')
+    if(Focus_Rela.objects.create(focuser=focuser,vic_focus_id=vic_focus).count()==0):
+        f = Focus_Rela.objects.create(focuser=focuser,vic_focus_id=vic_focus)
+        f.save()
+        n = Notification.objects.create(type="focus", receiver_id=vic_focus, noti_id=f.id)
+        n.save()
+        return HttpResponse('ok')
+    else:
+        return HttpResponse('focused')
 
 # 请求指定数目的推文
 def get_post_num(request):
@@ -225,15 +231,20 @@ def userinfo(request):
 # 获取指定推文下的评论
 def get_comment_post(request):
     id=request.POST['id']
-    x=Post.objects.get(id=id)
-    a=x.hits+1
-    x.hits=a
-    x.save()
     c=Comment.objects.filter(belongs_id=id).order_by('time')
     serializer = CommentSerializer(c,many=True)
     j = JSONRenderer().render(serializer.data)
-
     return HttpResponse(j, content_type="application/json")
+
+@login_required
+# 阅读量加一
+def hitpp(request):
+    id=request.POST['id']
+    x = Post.objects.get(id=id)
+    a = x.hits + 1
+    x.hits = a
+    x.save()
+    return HttpResponse("ok")
 
 # 获取指定评论下的回复
 def get_reply_comment(request):
@@ -362,5 +373,3 @@ def lll(request):
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j,content_type="application/json")
 
-def l(request):
-    return HttpResponse("2")
