@@ -88,7 +88,7 @@
                 <div class="col-md-5">
                     <template v-for="p in posts">
                         <div class="card">
-                            <div  v-on:click="post_dialog_show(p)" class="card-body">
+                            <div  v-on:click="open_modal(p)" class="card-body">
                                 <h4>{% verbatim %} {{ p.poster.username }} {% endverbatim %}</h4>
                                 <p>{% verbatim %} {{ p.time }} {% endverbatim %}</p>
                                 <img v-bind:src="p.img" alt="Card image" style="width:100%;height:300px;">
@@ -101,29 +101,65 @@
                         </div>
                     </template>
                     <!--模态框-->
-                    <div class="modal fade" id="myModal">
-                        <div class="modal-dialog">
+                    <div class="modal fade" id="myModal" style="overflow: auto">
+                        <div class="modal-dialog" aria-hidden="true">
                             <div class="modal-content">
                                 <!-- 模态框头部 -->
                                 <div class="modal-header">
-                                    <h4 class="modal-title">{% verbatim %} {{ modal.poster }} {% endverbatim %}</h4>
+                                    <h4 class="modal-title">{% verbatim %} {{ modal.poster.username }} {% endverbatim %}</h4>
                                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                                 </div>
                                 <!-- 模态框主体 -->
                                 <div class="modal-body">
                                     <div>{% verbatim %} {{ modal.content }} {% endverbatim %}</div>
+                                    <div>图片地址{% verbatim %} {{ modal.img }} {% endverbatim %}</div>
                                     <div>{% verbatim %} {{ modal.time }} {% endverbatim %}</div>
                                     <div>点赞数{% verbatim %} {{ modal.likes }} {% endverbatim %}</div>
                                     <div>阅读量{% verbatim %} {{ modal.hits }} {% endverbatim %}</div>
-                                    <button>点赞</button>
-                                    <button>评论</button>
+                                    <button v-on:click="post_i_like()">点赞</button>
+                                    <button v-on:click="to_comment(modal)">评论</button>
+                                    <!--评论-->
+                                    <!--<button v-on:click="update_comment()">加载评论</button>
+                                    <button v-on:click="update_replies()">加载回复</button>-->
                                     <template v-for="comment in modal.comments">
-                                        <div>{% verbatim %} {{ comment }} {% endverbatim %}</div>
+                                        <hr>
+                                        <div>{% verbatim %} {{ comment.poster.username }} {% endverbatim %}</div>
+                                        <div>{% verbatim %} {{ comment.time }} {% endverbatim %}</div>
+                                        <div>{% verbatim %} {{ comment.content }} {% endverbatim %}</div>
+                                        <button v-on:click="to_reply(comment)">回复</button>
+                                        <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)">回复折叠</button>
+                                        <div v-bind:id="comment.id" class="collapse">
+                                            <template v-for="reply in comment.replies">
+                                            <div>{% verbatim %} {{ reply.poster.username }} {% endverbatim %}回复{% verbatim %} {{ reply.vic_reply.username }} {% endverbatim %}</div>
+                                            <div>{% verbatim %} {{ reply.time }} {% endverbatim %}</div>
+                                            <div>{% verbatim %} {{ reply.content }} {% endverbatim %}</div>
+                                            </template>
+                                        </div>
                                     </template>
                                 </div>
                                 <!-- 模态框底部 -->
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--输入模态框-->
+                    <div class="modal fade" id="inputModal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <!-- 模态框头部 -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">对{% verbatim %} {{ inputModal.vic_poster.username }} {% endverbatim %}说</h4>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <!-- 模态框主体 -->
+                                <div class="modal-body">
+                                    <textarea type="text" v-model="inputModal.content" class="form-control" rows="5"></textarea>
+                                </div>
+                                <!-- 模态框底部 -->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" v-on:click="update_modal()">提交</button>
                                 </div>
                             </div>
                         </div>
@@ -134,7 +170,7 @@
         </div>
     </div>
     <script type="text/javascript">
-        window.onload = function() {
+        //window.onload = function() {
             var app = new Vue({
                 el: '#forlogin',
                 data: {
@@ -161,9 +197,13 @@
                         likes:"",
                         hits:"",
                         comments:[],
-                        replies:[],
                     },
-
+                    inputModal:{
+                        type:"",//comment or reply
+                        id:"",//所属推文或所属评论的id
+                        vic_poster:"",
+                        content:""
+                    },
                     message:''
                 },
                 watch:{
@@ -248,16 +288,109 @@
                             alert("用户信息请求失败")
                         });
                     },
-                    post_dialog_show(p){
+                    open_modal(p){
+                        for(var i in this.posts){
+                            if(this.posts[i].id===p.id){
+                                this.posts[i].reading+=1;
+                            }
+                        }
                         this.modal.id=p.id;
-                        this.modal.poster=p.poster.username;
+                        this.modal.poster=p.poster;
                         this.modal.content=p.content;
+                        this.modal.time=p.time;
+                        this.modal.img=p.img;
                         this.modal.likes=p.like;
                         this.modal.hits=p.reading;
+                        this.modal.comments=[];
+                        this.post_comments(p.id);
                         $('#myModal').modal('show');
                     },
-                    post_comments(){},
-                    post_replies(){}
+                    post_comments(id){
+                        //获取推文所属评论
+                        this.$http.post('/getcommentpost',{id:id},{emulateJSON:true}).then(function(res){
+                            var cm=res.body;
+                            for(var c in cm){
+                                this.modal.comments.push({
+                                    id: cm[c].id,
+                                    content: cm[c].content,
+                                    time: cm[c].time,
+                                    poster: cm[c].poster,
+                                    target: "#"+cm[c].id
+                                });
+                            }
+                        },function(){
+                            alert("评论信息请求失败")
+                        });
+                    },
+                    post_replies(comment){
+                        //获取评论所属回复
+                        this.$http.post('/getreplycomment',{id:comment.id},{emulateJSON:true}).then(function(res){
+                            var rp=res.body;
+                            var replies_comment=[];
+                            for(var r in rp){
+                                replies_comment.push({
+                                    id: rp[r].id,
+                                    content: rp[r].content,
+                                    time: rp[r].time,
+                                    poster: rp[r].poster,
+                                    vic_reply: rp[r].vic_reply
+                                });
+                            }
+                            Vue.set(comment,'replies',replies_comment);
+                        },function(){
+                            alert("回复信息请求失败")
+                        });
+                    },
+                    update_modal(){
+                        this.post_comment_or_reply();
+                        this.modal.comments=[];
+                        this.post_comments(this.modal.id);
+                        $('#inputModal').modal('hide');
+                    },
+                    post_comment_or_reply(){
+                        //发评论或回复
+                        if(this.inputModal.type==="comment"){
+                            this.$http.post('/comment',{c:this.inputModal.content,b:this.inputModal.id},{emulateJSON:true}).then(function(res){
+
+                            },function(){
+                                alert("评论发送失败")
+                            });
+                        }
+                        else{
+                            this.$http.post('/reply',{c:this.inputModal.content,b:this.inputModal.id,u:this.inputModal.vic_poster.id},{emulateJSON:true}).then(function(res){
+
+                            },function(){
+                                alert("回复发送失败")
+                            });
+                        }
+                    },
+                    to_comment(modal){
+                        this.inputModal.type="comment";
+                        this.inputModal.id=modal.id;
+                        this.inputModal.vic_poster=modal.poster;
+                        this.inputModal.content="";
+                        $('#inputModal').modal('show');
+                    },
+                    to_reply(comment){
+                        this.inputModal.type="reply";
+                        this.inputModal.id=comment.id;
+                        this.inputModal.vic_poster=comment.poster;
+                        this.inputModal.content="";
+                        $('#inputModal').modal('show');
+                    },
+                    post_i_like(){
+                        //点赞
+                        this.$http.post('/like',{v:this.modal.id},{emulateJSON:true}).then(function(res){
+                            this.modal.likes+=1;
+                            for(var i in this.posts){
+                                if(this.posts[i].id===this.modal.id){
+                                    this.posts[i].like+=1;
+                                }
+                            }
+                        },function(){
+                            alert("点赞失败")
+                        });
+                    }
                 }
             });
             app.post_login_status();
@@ -275,7 +408,7 @@
                app.post_ten_posts();
             }   
           };
-        };
+       // };
     </script>
 </body>
 </html>

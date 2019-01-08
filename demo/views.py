@@ -71,7 +71,7 @@ def comment(request):
     belongs = request.POST['b']
     c = Comment.objects.create(content=content,poster=poster,belongs_id=belongs)
     c.save()
-    n=Notification.objects.create(type="comment",receiver_id=Post.objects.get(id=belongs).poster,noti_id=c.id)
+    n=Notification.objects.create(type="comment",receiver_id=Post.objects.get(id=belongs).poster.id,noti_id=c.id)
     n.save()
     return HttpResponse('ok')
 
@@ -84,7 +84,7 @@ def reply(request):
     vic_reply = request.POST['u']
     r = Reply.objects.create(content=content,poster=poster,belongs_id=belongs,vic_reply_id=vic_reply)
     r.save()
-    n=Notification.objects.create(type="reply",receiver_id=Comment.objects.get(id=belongs).poster,noti_id=r.id)
+    n=Notification.objects.create(type="reply",receiver_id=Comment.objects.get(id=belongs).poster.id,noti_id=r.id)
     n.save()
     return HttpResponse('ok')
 
@@ -100,7 +100,7 @@ def like(request):
     a=a+1
     p.likes=a
     p.save()
-    n=Notification.objects.create(type="like",receiver_id=Post.objects.get(id=vic_like).poster,noti_id=l.id)
+    n=Notification.objects.create(type="like",receiver_id=Post.objects.get(id=vic_like).poster.id,noti_id=l.id)
     n.save()
     return HttpResponse('ok')
 
@@ -225,9 +225,14 @@ def userinfo(request):
 # 获取指定推文下的评论
 def get_comment_post(request):
     id=request.POST['id']
+    x=Post.objects.get(id=id)
+    a=x.hits+1
+    x.hits=a
+    x.save()
     c=Comment.objects.filter(belongs_id=id).order_by('time')
     serializer = CommentSerializer(c,many=True)
     j = JSONRenderer().render(serializer.data)
+
     return HttpResponse(j, content_type="application/json")
 
 # 获取指定评论下的回复
