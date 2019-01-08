@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'^reset$', views.reset),
     url(r'^getcommentpost$', views.get_comment_post),
     url(r'^getreplycomment$', views.get_reply_comment),
+    url(r'^hits$', views.hitpp),
     url(r'^lll', views.lll),
 
 ]
