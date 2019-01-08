@@ -61,7 +61,7 @@ def post(request):
     poster = request.user
     p=Post.objects.create(content=content,poster=poster,picture=fuck)
     p.save()
-    return HttpResponse('ok')
+    return HttpResponse(str(p.id))
 
 # 发表评论
 @login_required
@@ -73,7 +73,7 @@ def comment(request):
     c.save()
     n=Notification.objects.create(type="comment",receiver_id=Post.objects.get(id=belongs).poster.id,noti_id=c.id)
     n.save()
-    return HttpResponse('ok')
+    return HttpResponse(str(c.id))
 
 # 发表回复
 @login_required
@@ -86,7 +86,7 @@ def reply(request):
     r.save()
     n=Notification.objects.create(type="reply",receiver_id=Comment.objects.get(id=belongs).poster.id,noti_id=r.id)
     n.save()
-    return HttpResponse('ok')
+    return HttpResponse(str(r.id))
 
 # 点赞
 @login_required
@@ -114,11 +114,14 @@ def at(request):
     belongs_id = request.POST['b']
     ater = request.user
     vic_at = request.POST['v']
-    a = At.objects.create(type=type,belongs_id=belongs_id,ater=ater,vic_at_id=vic_at)
-    a.save()
-    n = Notification.objects.create(type="at", receiver_id=vic_at, noti_id=a.id)
-    n.save()
-    return HttpResponse('ok')
+    if(User.objects.filter(id=vic_at).count()>0):
+        a = At.objects.create(type=type,belongs_id=belongs_id,ater=ater,vic_at_id=vic_at)
+        a.save()
+        n = Notification.objects.create(type="at", receiver_id=vic_at, noti_id=a.id)
+        n.save()
+        return HttpResponse('ok')
+    else:
+        return HttpResponse('error')
 
 # 私信
 @login_required
@@ -271,7 +274,7 @@ def get_comment(request):
     return HttpResponse(j, content_type="application/json")
 
 # 获取指定回复
-def get_post(request):
+def get_reply(request):
     id=request.POST['id']
     c=Reply.objects.get(id=id)
     serializer=ReplySerializer(c)
@@ -366,6 +369,17 @@ def get_post_hot(request):
             serializer = PostSerializer(Post.objects.filter(time__lt=time).order_by('-likes')[:num],many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
+
+# 判断有没有这个人
+def isexist(request):
+    name=request.POST['name']
+    if(User.objects.filter(username=name).count()>0):
+        u=User.objects.get(username=name)
+        serializer = UserSerializer(u)
+        j = JSONRenderer().render(serializer.data)
+        return HttpResponse(j, content_type="application/json")
+    else:
+        return HttpResponse('error')
 
 # 测试
 def lll(request):
