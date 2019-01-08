@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^like$', views.like),
     url(r'^letter$', views.letter),
     url(r'^focus$', views.focus),
+    url(r'^forgetpassword$', views.forgetpassword),
     url(r'^sendmail$', views.sendmail),
     url(r'^logstatus$', views.logstatus),
     url(r'^userinfo$', views.userinfo),

@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-    <div id="forlogin" v-cloak>
+    <div id="app" v-cloak>
         <div class="navbar navbar-expand-md bg-light fixed-top">
             <div class="container-fluid">
                 <ul class="navbar-nav navbar-left nav-pills">
@@ -35,7 +35,7 @@
                 </span>
                 <template v-if="logined">
                     <ul class="navbar-nav navbar-right">
-                        <li><button type="button" class="btn btn-primary" v-on:click="to_post()">发博客</button></li>
+                        <li><button type="button" class="btn btn-primary" v-on:click="to_post()">发微博</button></li>
                         <li><button type="button" v-on:click="to_signout" class="btn btn-danger">注销</button></li>
                     </ul>
                 </template>
@@ -48,10 +48,13 @@
                             <input type="password" v-model="user_password_login" class="form-control" placeholder="密码">
                         </li>
                         <li>
-                            <button type="button" v-on:click="post_to_login" class="btn btn-primary">登录</button>
+                            <button type="button" v-on:click="post_to_login()" class="btn btn-primary">登录</button>
                         </li>
                         <li>
-                            <button type="button" v-on:click="to_register" class="btn btn-success">注册</button>
+                            <button type="button" v-on:click="to_register()" class="btn btn-success">注册</button>
+                        </li>
+                        <li>
+                            <button type="button" v-on:click="to_forgetPassword()" class="btn">忘记密码</button>
                         </li>
                     </ul>
                 </template>
@@ -62,7 +65,7 @@
                 <div class="col-md-1"></div>
                 <div class="col-md-3">
                     <div class="card">
-                        <img class="card-img-top" src="/static/tou.jpg" alt="Card image" style="width:100%">
+                        <img class="card-img-top" src="/static/tou.jpg" style="width:100%">
                         <div class="card-body">
                             <h4 class="card-title">{% verbatim %} {{ user_name }} {% endverbatim %}</h4>
                             <template v-if="logined">
@@ -91,7 +94,7 @@
                             <div  v-on:click="open_modal(p)" class="card-body">
                                 <h4>{% verbatim %} {{ p.poster.username }} {% endverbatim %}</h4>
                                 <p>{% verbatim %} {{ p.time }} {% endverbatim %}</p>
-                                <img v-bind:src="p.img" alt="Card image" style="width:100%;height:300px;">
+                                <img v-bind:src="p.img" style="width:100%;">
                                 <p>{% verbatim %} {{ p.content }} {% endverbatim %}</p>
                             </div>
                             <div class="card-footer">
@@ -111,8 +114,8 @@
                                 </div>
                                 <!-- 模态框主体 -->
                                 <div class="modal-body">
+                                    <img class="card-img-top" v-bind:src="modal.img" style="width:100%">
                                     <div>{% verbatim %} {{ modal.content }} {% endverbatim %}</div>
-                                    <div>图片地址{% verbatim %} {{ modal.img }} {% endverbatim %}</div>
                                     <div>{% verbatim %} {{ modal.time }} {% endverbatim %}</div>
                                     <div>点赞数{% verbatim %} {{ modal.likes }} {% endverbatim %}</div>
                                     <div>阅读量{% verbatim %} {{ modal.hits }} {% endverbatim %}</div>
@@ -171,7 +174,7 @@
                             <div class="modal-content">
                                 <!-- 模态框头部 -->
                                 <div class="modal-header">
-                                    <h4 class="modal-title">发博客</h4>
+                                    <h4 class="modal-title">发微博</h4>
                                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                                 </div>
                                 <!-- 模态框主体 -->
@@ -179,7 +182,7 @@
                                     <div>图片链接</div>
                                     <input type="text" v-model="postModal.img_input" class="form-control">
                                     <button type="button" class="btn" v-on:click="update_postModal_img()">更新</button>
-                                    <img class="card-img-top" src="postModal.img_link" alt="可添加图片" style="width:100%">
+                                    <img class="card-img-top" v-bind:src="postModal.img_link" alt="可添加图片" style="width:100%">
                                     <div>@<input type="text" v-model="postModal.at_input" class="form-control"></div>
                                     <textarea type="text" v-model="postModal.content" class="form-control" rows="5"></textarea>
                                 </div>
@@ -196,9 +199,15 @@
         </div>
     </div>
     <script type="text/javascript">
+        //var moment=require('moment');
+       // Vue.filter('formatDate', function (value) {
+           // if(value){
+                //return moment(String(value)).format('MM/DD/YYYY hh:mm');
+           // }
+        //});
         //window.onload = function() {
             var app = new Vue({
-                el: '#forlogin',
+                el: '#app',
                 data: {
                     //登录表单数据模型
                     user_name_login:'',
@@ -257,6 +266,10 @@
                         //注册
                         window.location.href='/signup';
                     },
+                    to_forgetPassword(){
+                        //忘记密码
+                        window.location.href='/forgetpassword';
+                    },
                     post_login_status:function(){
                         //请求登录状态
                         this.$http.post('/logstatus',{},{emulateJSON:true}).then(function(res){
@@ -289,7 +302,7 @@
                         //获取十篇推文
                         var json={};
                         json["userid"]="";
-                        json["num"]="3";
+                        json["num"]="10";
                         json["lastid"]=this.lastid;
                         this.$http.post('/getpost',json,{emulateJSON:true}).then(function(res){
                             var ps=res.body;
@@ -321,22 +334,24 @@
                         });
                     },
                     open_modal(p){
-                        this.post_add_reading(p.id);
-                        for(var i in this.posts){
-                            if(this.posts[i].id===p.id){
-                                this.posts[i].reading+=1;
+                        if(this.logined===true){
+                            this.post_add_reading(p.id);
+                            for(var i in this.posts){
+                                if(this.posts[i].id===p.id){
+                                    this.posts[i].reading+=1;
+                                }
                             }
+                            this.modal.id=p.id;
+                            this.modal.poster=p.poster;
+                            this.modal.content=p.content;
+                            this.modal.time=p.time;
+                            this.modal.img=p.img;
+                            this.modal.likes=p.like;
+                            this.modal.hits=p.reading;
+                            this.modal.comments=[];
+                            this.post_comments(p.id);
+                            $('#myModal').modal('show');
                         }
-                        this.modal.id=p.id;
-                        this.modal.poster=p.poster;
-                        this.modal.content=p.content;
-                        this.modal.time=p.time;
-                        this.modal.img=p.img;
-                        this.modal.likes=p.like;
-                        this.modal.hits=p.reading;
-                        this.modal.comments=[];
-                        this.post_comments(p.id);
-                        $('#myModal').modal('show');
                     },
                     post_add_reading(id){
                         //增加阅读量
@@ -451,21 +466,41 @@
                         this.postModal.img_link=this.postModal.img_input;
                     },
                     post_postModal_to_post(){
-                        this.check_at_input();
-                        if(this.postModal.allow_post===true){
-                            this.post_postModal_post();
+                        if(this.postModal.content==="")
+                        {
+                            alert("推文内容不能为空");
                         }
                         else{
-                            alert("确实不对");
+                            this.postModal_check_at_input();
+                            if(this.postModal.allow_post===true){//可以发送
+                                this.post_postModal_post();
+                                this.post_at(this.postModal.at_list,this.postModal.self_id,"");
+                            }
+                            //$('#postModal').modal('hide');
+                            window.location.href='/';//直接刷页面
                         }
                     },
-                    check_at_input(){
-                        this.postModal.allow_post=false;
-                        alert("不对");
+                    postModal_check_at_input(){
+                        //检查@字符串 提示那个错了
+                        //this.postModal.allow_post=false;
                     },
                     post_postModal_post(){
                         //发推
-                        alert("ok");
+                        this.$http.post('/post',{c:this.postModal.content,pic:this.postModal.img_link},{emulateJSON:true}).then(function(res){
+                            this.postModal.self_id=res.body;
+                        },function(){
+                            alert("推文发送失败")
+                        });
+                    },
+                    post_at(at_list, belong_id, type){
+                        //发送@
+                        for(var at in at_list){
+                            this.$http.post('/at',{t:type,b:belong_id,v:at.id},{emulateJSON:true}).then(function(res){
+
+                            },function(){
+
+                            });
+                        }
                     }
                 }
             });

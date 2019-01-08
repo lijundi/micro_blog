@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+    <style>
+        body{
+            padding-top: 70px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="navbar navbar-expand-md bg-light fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-left">
+                </div>
+                <span class="navbar-text text-muted font-weight-bold">
+                    迷你博客
+                </span>
+                <div class="navbar-right">
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <input type="text" v-model="mail" class="form-control" placeholder="邮箱">
+                        </div>
+                        <div class="card-footer">
+                            <button type="button" v-on:click="to_sendmail()" class="btn btn-primary">发送</button>
+                            <button type="button" v-on:click="to_base_index()" class="btn btn-primary">返回</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#app',
+            data: {
+                mail:"",
+                success:false//发送邮箱成功标志
+            },
+            watch:{
+                success: function (nval, oval) {
+                    if(nval===true)
+                        window.location.href='/';
+                }
+            },
+            methods: {
+                to_sendmail(){
+                    if(this.mail==="")
+                    {
+                        alert("邮箱不能为空！");
+                    }
+                    else{
+                        var atpos=this.mail.indexOf("@");
+                        var dotpos=this.mail.lastIndexOf(".");
+                        if (atpos<1 || dotpos<atpos+2 || dotpos+2>=this.mail.length){
+                            //邮箱验证
+                            alert("邮箱格式不正确！");
+                        }
+                        else
+                        {
+                            this.$http.post('/post',{who:this.mail},{emulateJSON:true}).then(function(res){
+                                if(res.body==="ok"){
+                                    alert("已发送到"+this.mail);
+                                    this.success=true;
+                                }
+                                else{
+                                    alert("所填邮箱不存在！");
+                                }
+                            },function(){
+                                alert("交互失败")
+                            });
+                        }
+                    }
+                },
+                to_base_index(){
+                    window.location.href='/';
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

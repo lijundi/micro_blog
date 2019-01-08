@@ -18,6 +18,9 @@ from micro_blog import settings
 def index(request):
     return render(request, 'base_index.html')
 
+# 忘记密码页面
+def forgetpassword(request):
+    return render(request, 'sendmail.html')
 
 # 注册
 def signup(request):
