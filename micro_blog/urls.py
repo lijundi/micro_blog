@@ -43,6 +43,8 @@ urlpatterns = [
     url(r'^getreplycomment$', views.get_reply_comment),
     url(r'^hits$', views.hitpp),
     url(r'^idgetpost$', views.get_post),
+    url(r'^atisexist$', views.atisexist),
+    url(r'^gettmpid$', views.tmppostid),
     url(r'^lll', views.lll),
 
 ]

@@ -95,7 +95,8 @@
                             <div  v-on:click="open_modal(p)" class="card-body">
                                 <h4>{% verbatim %} {{ p.poster.username }} {% endverbatim %}</h4>
                                 <p>{% verbatim %} {{ p.time | formatDate }} {% endverbatim %}</p>
-                                <img v-bind:src="p.img" style="width:100%;">
+                                <!--<img v-bind:src="p.img" style="width:100%;">-->
+                                <iframe v-bind:src="p.img" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
                                 <p>{% verbatim %} {{ p.content }} {% endverbatim %}</p>
                             </div>
                             <div class="card-footer">
@@ -115,7 +116,8 @@
                                 </div>
                                 <!-- 模态框主体 -->
                                 <div class="modal-body">
-                                    <img class="card-img-top" v-bind:src="modal.img" style="width:100%">
+                                    <!--<img class="card-img-top" v-bind:src="modal.img" style="width:100%">-->
+                                    <iframe v-bind:src="modal.img" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
                                     <div>{% verbatim %} {{ modal.content }} {% endverbatim %}</div>
                                     <div>{% verbatim %} {{ modal.time | formatDate }} {% endverbatim %}</div>
                                     <div>点赞数{% verbatim %} {{ modal.likes }} {% endverbatim %}</div>
@@ -123,8 +125,6 @@
                                     <button v-on:click="post_i_like()">点赞</button>
                                     <button v-on:click="to_comment(modal)">评论</button>
                                     <!--评论-->
-                                    <!--<button v-on:click="update_comment()">加载评论</button>
-                                    <button v-on:click="update_replies()">加载回复</button>-->
                                     <template v-for="comment in modal.comments">
                                         <hr>
                                         <div>{% verbatim %} {{ comment.poster.username }} {% endverbatim %}</div>
@@ -160,6 +160,14 @@
                                 </div>
                                 <!-- 模态框主体 -->
                                 <div class="modal-body">
+                                    <div>
+                                        @
+                                        <input type="text" v-model="inputModal.at_input" v-on:keyup.enter="inputModal_check_at_input()" class="form-control">
+                                        <button type="button" class="btn" v-on:click="inputModal_check_at_input()">添加</button>
+                                        <template v-for="at in inputModal.at_list">
+                                            <a href="#">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
+                                        </template>
+                                    </div>
                                     <textarea type="text" v-model="inputModal.content" class="form-control" rows="5"></textarea>
                                 </div>
                                 <!-- 模态框底部 -->
@@ -183,8 +191,16 @@
                                     <div>图片链接</div>
                                     <input type="text" v-model="postModal.img_input" class="form-control">
                                     <button type="button" class="btn" v-on:click="update_postModal_img()">更新</button>
-                                    <img class="card-img-top" v-bind:src="postModal.img_link" alt="可添加图片" style="width:100%">
-                                    <div>@<input type="text" v-model="postModal.at_input" class="form-control"></div>
+                                    <iframe v-bind:src="postModal.img_link" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                                    <!--<img class="card-img-top" v-bind:src="postModal.img_link" alt="可添加图片" style="width:100%">-->
+                                    <div>
+                                        @
+                                        <input type="text" v-model="postModal.at_input" v-on:keyup.enter="postModal_check_at_input()" class="form-control">
+                                        <button type="button" class="btn" v-on:click="postModal_check_at_input()">添加</button>
+                                        <template v-for="at in postModal.at_list">
+                                            <a href="#">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
+                                        </template>
+                                    </div>
                                     <textarea type="text" v-model="postModal.content" class="form-control" rows="5"></textarea>
                                 </div>
                                 <!-- 模态框底部 -->
@@ -236,8 +252,12 @@
                     inputModal:{
                         type:"",//comment or reply
                         id:"",//所属推文或所属评论的id
+                        self_id:"",
                         vic_poster:"",
-                        content:""
+                        content:"",
+                        at_list:[],
+                        at_input:"",
+                        at:""
                     },
                     postModal:{
                         self_id:"",
@@ -245,8 +265,9 @@
                         img_link:"",
                         at_input:"",
                         at_list:[],
+                        at:"",
                         content:"",
-                        allow_post:true
+                        allow_post:true//预留
                     },
                     message:''
                 },
@@ -255,7 +276,7 @@
                         if(nval===true){
                             this.post_user_info();
                         }
-                    }
+                    },
                 },
                 methods: {
                     to_signout:function(){
@@ -334,24 +355,22 @@
                         });
                     },
                     open_modal(p){
-                        //if(this.logined===true){
-                            this.post_add_reading(p.id);
-                            for(var i in this.posts){
-                                if(this.posts[i].id===p.id){
-                                    this.posts[i].reading+=1;
-                                }
+                        this.post_add_reading(p.id);
+                        for(var i in this.posts){
+                            if(this.posts[i].id===p.id){
+                                this.posts[i].reading+=1;
                             }
-                            this.modal.id=p.id;
-                            this.modal.poster=p.poster;
-                            this.modal.content=p.content;
-                            this.modal.time=p.time;
-                            this.modal.img=p.img;
-                            this.modal.likes=p.like;
-                            this.modal.hits=p.reading;
-                            this.modal.comments=[];
-                            this.post_comments(p.id);
-                            $('#myModal').modal('show');
-                        //}
+                        }
+                        this.modal.id=p.id;
+                        this.modal.poster=p.poster;
+                        this.modal.content=p.content;
+                        this.modal.time=p.time;
+                        this.modal.img=p.img;
+                        this.modal.likes=p.like;
+                        this.modal.hits=p.reading;
+                        this.modal.comments=[];
+                        this.post_comments(p.id);
+                        $('#myModal').modal('show');
                     },
                     post_add_reading(id){
                         //增加阅读量
@@ -401,7 +420,28 @@
                         this.post_comment_or_reply();
                         this.modal.comments=[];
                         this.post_comments(this.modal.id);
+                        this.post_at(this.inputModal.at_list,this.inputModal.self_id,this.inputModal.type);
                         $('#inputModal').modal('hide');
+                    },
+                    inputModal_check_at_input(){
+                        var n=this.inputModal.at_input;
+                        for(var i in this.inputModal.at_list){
+                            if(this.inputModal.at_list[i].username===n){
+                                alert("已@！！！");
+                                return ;
+                            }
+                        }
+                        this.$http.post('/atisexist',{name:n},{emulateJSON:true}).then(function(res){
+                            this.inputModal.at=res.body;
+                            if(this.inputModal.at==="error"){
+                                alert("所@之人不存在！");
+                            }
+                            else{
+                                this.inputModal.at_list.push(this.inputModal.at);
+                            }
+                        },function(){
+
+                        });
                     },
                     post_comment_or_reply(){
                         //发评论或回复
@@ -425,6 +465,13 @@
                         this.inputModal.id=modal.id;
                         this.inputModal.vic_poster=modal.poster;
                         this.inputModal.content="";
+                        this.inputModal.at_input="";
+                        this.inputModal.at_list=[];
+                        this.inputModal.at="";
+                        this.$http.post('/gettmpid',{},{emulateJSON:true}).then(function(res){
+                            this.inputModal.self_id=res.body;
+                        },function(){
+                        });
                         $('#inputModal').modal('show');
                     },
                     to_reply(cmORrp,id){
@@ -432,6 +479,13 @@
                         this.inputModal.id=id;
                         this.inputModal.vic_poster=cmORrp.poster;
                         this.inputModal.content="";
+                        this.inputModal.at_input="";
+                        this.inputModal.at_list=[];
+                        this.inputModal.at="";
+                        this.$http.post('/gettmpid',{},{emulateJSON:true}).then(function(res){
+                            this.inputModal.self_id=res.body;
+                        },function(){
+                        });
                         $('#inputModal').modal('show');
                     },
                     post_i_like(){
@@ -453,13 +507,16 @@
                         });
                     },
                     to_post(){
-                        this.postModal.allow_post=true;
+                        //this.postModal.allow_post=true;
                         this.postModal.img_input="";
                         this.postModal.img_link="";
                         this.postModal.at_input="";
                         this.postModal.at_list=[];
                         this.postModal.content="";
-                        this.postModal.self_id="";
+                        this.$http.post('/gettmpid',{},{emulateJSON:true}).then(function(res){
+                            this.postModal.self_id=res.body;
+                        },function(){
+                        });
                         $('#postModal').modal('show');
                     },
                     update_postModal_img(){
@@ -471,31 +528,49 @@
                             alert("推文内容不能为空");
                         }
                         else{
-                            this.postModal_check_at_input();
-                            if(this.postModal.allow_post===true){//可以发送
-                                this.post_postModal_post();
-                                this.post_at(this.postModal.at_list,this.postModal.self_id);
-                            }
-                            //$('#postModal').modal('hide');
-                            window.location.href='/';//直接刷页面
+                            //this.postModal.allow_post=true;
+                            //this.postModal_check_at_input();
+                            //this.postModal.at_list.push({id:3,username:"limmy",email:"tianqi218@126.com"});
+                            this.post_postModal_post();
+                            this.post_at(this.postModal.at_list,this.postModal.self_id,"post");
                         }
                     },
                     postModal_check_at_input(){
-                        //检查@字符串 提示那个错了
+                        //检查@字符串
                         //this.postModal.allow_post=false;
+                        //var n=this.postModal.at_input.slice(1);
+                        var n=this.postModal.at_input;
+                        for(var i in this.postModal.at_list){
+                            if(this.postModal.at_list[i].username===n){
+                                alert("已@！！！");
+                                return ;
+                            }
+                        }
+                        this.$http.post('/atisexist',{name:n},{emulateJSON:true}).then(function(res){
+                            this.postModal.at=res.body;
+                            if(this.postModal.at==="error"){
+                                alert("所@之人不存在！");
+                                //this.postModal.allow_post=false;
+                            }
+                            else{
+                                this.postModal.at_list.push(this.postModal.at);
+                            }
+                        },function(){
+
+                        });
                     },
                     post_postModal_post(){
                         //发推
                         this.$http.post('/post',{c:this.postModal.content,pic:this.postModal.img_link},{emulateJSON:true}).then(function(res){
-                            this.postModal.self_id=res.body;
+                            window.location.href='/';//直接刷页面
                         },function(){
                             alert("推文发送失败")
                         });
                     },
-                    post_at(at_list, belong_id){
-                        //发送@
+                    post_at(at_list, belong_id, type){
+                        //发送@ type:post comment reply
                         for(var at in at_list){
-                            this.$http.post('/at',{b:belong_id,v:at.id},{emulateJSON:true}).then(function(res){
+                            this.$http.post('/at',{t:type,b:belong_id,v:at_list[at].id},{emulateJSON:true}).then(function(res){
 
                             },function(){
 

@@ -113,11 +113,12 @@ def like(request):
 # @
 @login_required
 def at(request):
+    type = request.POST['t']
     belongs_id = request.POST['b']
     ater = request.user
     vic_at = request.POST['v']
     if(User.objects.filter(id=vic_at).count()>0):
-        a = At.objects.create(type="",belongs_id=belongs_id,ater=ater,vic_at_id=vic_at)
+        a = At.objects.create(type=type,belongs_id=belongs_id,ater=ater,vic_at_id=vic_at)
         a.save()
         n = Notification.objects.create(type="at", receiver_id=vic_at, noti_id=a.id)
         n.save()
@@ -374,7 +375,7 @@ def get_post_hot(request):
     return HttpResponse(j, content_type="application/json")
 
 # 判断有没有这个人
-def isexist(request):
+def atisexist(request):
     name=request.POST['name']
     if(User.objects.filter(username=name).count()>0):
         u=User.objects.get(username=name)
@@ -383,6 +384,10 @@ def isexist(request):
         return HttpResponse(j, content_type="application/json")
     else:
         return HttpResponse('error')
+
+# 获取准备发推文基类id
+def tmppostid(request):
+    return HttpResponse(str(Base_Post.objects.last().id+1))
 
 # 测试
 def lll(request):
