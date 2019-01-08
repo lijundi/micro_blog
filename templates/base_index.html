@@ -35,7 +35,7 @@
                 </span>
                 <template v-if="logined">
                     <ul class="navbar-nav navbar-right">
-                        <li><button type="button" class="btn btn-primary">发博客</button></li>
+                        <li><button type="button" class="btn btn-primary" v-on:click="to_post()">发博客</button></li>
                         <li><button type="button" v-on:click="to_signout" class="btn btn-danger">注销</button></li>
                     </ul>
                 </template>
@@ -100,7 +100,7 @@
                             </div>
                         </div>
                     </template>
-                    <!--模态框-->
+                    <!--推文模态框-->
                     <div class="modal fade" id="myModal" style="overflow: auto">
                         <div class="modal-dialog" aria-hidden="true">
                             <div class="modal-content">
@@ -165,6 +165,31 @@
                             </div>
                         </div>
                     </div>
+                    <!--发推模态框-->
+                    <div class="modal fade" id="postModal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <!-- 模态框头部 -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">发博客</h4>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <!-- 模态框主体 -->
+                                <div class="modal-body">
+                                    <div>图片链接</div>
+                                    <input type="text" v-model="postModal.img_input" class="form-control">
+                                    <button type="button" class="btn" v-on:click="update_postModal_img()">更新</button>
+                                    <img class="card-img-top" src="postModal.img_link" alt="可添加图片" style="width:100%">
+                                    <div>@<input type="text" v-model="postModal.at_input" class="form-control"></div>
+                                    <textarea type="text" v-model="postModal.content" class="form-control" rows="5"></textarea>
+                                </div>
+                                <!-- 模态框底部 -->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" v-on:click="post_postModal_to_post()">发表</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-3"></div>
             </div>
@@ -190,7 +215,7 @@
                     lastid:"",
                     //模态框
                     modal:{
-                        id:"",
+                        id:"",//该推文id
                         poster: "",
                         content:"",
                         img:"",
@@ -205,6 +230,15 @@
                         vic_poster:"",
                         content:""
                     },
+                    postModal:{
+                        self_id:"",
+                        img_input:"",
+                        img_link:"",
+                        at_input:"",
+                        at_list:[],
+                        content:"",
+                        allow_post:true
+                    },
                     message:''
                 },
                 watch:{
@@ -215,9 +249,6 @@
                     }
                 },
                 methods: {
-                    update: function () {
-                        this.logined = true
-                    },
                     to_signout:function(){
                         //注销
                         window.location.href='/signout';
@@ -405,6 +436,36 @@
                         },function(){
                             alert("点赞失败")
                         });
+                    },
+                    to_post(){
+                        this.postModal.allow_post=true;
+                        this.postModal.img_input="";
+                        this.postModal.img_link="";
+                        this.postModal.at_input="";
+                        this.postModal.at_list=[];
+                        this.postModal.content="";
+                        this.postModal.self_id="";
+                        $('#postModal').modal('show');
+                    },
+                    update_postModal_img(){
+                        this.postModal.img_link=this.postModal.img_input;
+                    },
+                    post_postModal_to_post(){
+                        this.check_at_input();
+                        if(this.postModal.allow_post===true){
+                            this.post_postModal_post();
+                        }
+                        else{
+                            alert("确实不对");
+                        }
+                    },
+                    check_at_input(){
+                        this.postModal.allow_post=false;
+                        alert("不对");
+                    },
+                    post_postModal_post(){
+                        //发推
+                        alert("ok");
                     }
                 }
             });
