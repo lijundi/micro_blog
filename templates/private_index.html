@@ -36,6 +36,9 @@
                 </span>
                 <template v-if="logined">
                     <ul class="navbar-nav navbar-right">
+                        <li class="navbar-text">
+                            你好，{% verbatim %} {{ logined_username }} {% endverbatim %}&nbsp;&nbsp;&nbsp;&nbsp;
+                        </li>
                         <li><button type="button" class="btn btn-primary" v-on:click="to_post()">发微博</button></li>
                         <li><button type="button" v-on:click="to_signout" class="btn btn-danger">注销</button></li>
                     </ul>
@@ -69,23 +72,20 @@
                         <img class="card-img-top" src="/static/tou.jpg" style="width:100%">
                         <div class="card-body">
                             <h4 class="card-title">{% verbatim %} {{ user_name }} {% endverbatim %}</h4>
-                            <template v-if="logined">
-                                <table>
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-primary">粉丝</td>
-                                            <td class="text-primary">关注</td>
-                                            <td class="text-primary">微博</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted">{% verbatim %} {{ user_vic_focus_num }} {% endverbatim %}</td>
-                                            <td class="text-muted">{% verbatim %} {{ user_focus_num }} {% endverbatim %}</td>
-                                            <td class="text-muted">{% verbatim %} {{ user_posts_num }} {% endverbatim %}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </template>
-
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-primary">粉丝</td>
+                                        <td class="text-primary">关注</td>
+                                        <td class="text-primary">微博</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">{% verbatim %} {{ user_vic_focus_num }} {% endverbatim %}</td>
+                                        <td class="text-muted">{% verbatim %} {{ user_focus_num }} {% endverbatim %}</td>
+                                        <td class="text-muted">{% verbatim %} {{ user_posts_num }} {% endverbatim %}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -211,7 +211,47 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3"></div>
+                <div class="col-md-2">
+                    <!--关注折叠-->
+                    <!--<button class="btn btn-primary" data-toggle="collapse" data-target="#focus">关注的人</button>
+                    <div id="#focus" class="collapse">
+                        <template v-for="f in user_focus">
+                            <div>{% verbatim %} {{ f.username }} {% endverbatim %}</div>
+                        </template>
+                    </div>-->
+                    <!--粉丝折叠-->
+                    <!--<button class="btn btn-primary" data-toggle="collapse" data-target="#vic_focus">粉丝</button>
+                    <div id="#vic_focus" class="collapse">
+                        <template v-for="vf in user_vic_focus">
+                            <div>{% verbatim %} {{ vf.username }} {% endverbatim %}</div>
+                        </template>
+                    </div>-->
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link" data-toggle="collapse" href="#collapseOne">关注的人</a>
+                        </div>
+                        <div id="collapseOne" class="collapse" data-parent="#accordion">
+                            <div class="card-body">
+                                <template v-for="f in user_focus">
+                                    <div>{% verbatim %} {{ f.username }} {% endverbatim %}</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <a class="card-link" data-toggle="collapse" href="#collapseTwo">粉丝</a>
+                        </div>
+                        <div id="collapseTwo" class="collapse" data-parent="#accordion">
+                            <div class="card-body">
+                                <template v-for="vf in user_vic_focus">
+                                    <div>{% verbatim %} {{ vf.username }} {% endverbatim %}</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1"></div>
             </div>
         </div>
     </div>
@@ -238,6 +278,8 @@
                     user_focus_num: 0,
                     user_vic_focus_num: 0,
                     user_posts_num: 0,
+                    user_focus:[],
+                    user_vic_focus:[],
 
                     //微博
                     posts:[],
@@ -346,18 +388,47 @@
                     },
                     post_this_all_vic_focus(){
                         //获取这个人的所有粉丝
-
+                        this.$http.post('/getfans',{id: this.user_id},{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            for(var p in ps){
+                                this.user_vic_focus.push(
+                                    ps[p].focuser
+                                );
+                            }
+                        },function(){
+                            alert("粉丝信息请求失败")
+                        });
                     },
                     post_this_all_focus(){
                         //获取这个人的所有关注的人
-
+                        this.$http.post('/getfocus',{id: this.user_id},{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            for(var p in ps){
+                                this.user_focus.push(
+                                    ps[p].vic_focus
+                                );
+                            }
+                        },function(){
+                            alert("关注者信息请求失败")
+                        });
+                    },
+                    post_this_user_info(){
+                        //获取个人主页用户信息
+                        this.$http.post('/',{},{emulateJSON:true}).then(function(res){
+                            this.user_name=res.body.name;
+                            this.user_focus_num=res.body.guanzhu;
+                            this.user_vic_focus_num=res.body.fensi;
+                            this.user_posts_num=res.body.tuiwen;
+                        },function(){
+                            alert("主页用户信息请求失败")
+                        });
                     },
                     post_logined_user_info(){
                         //获取登录用户信息
                         this.$http.post('/userinfo',{},{emulateJSON:true}).then(function(res){
                             this.logined_username=res.body.name;
                         },function(){
-                            alert("用户信息请求失败")
+                            alert("登录用户信息请求失败")
                         });
                     },
 
@@ -587,7 +658,10 @@
                 }
             });
             app.post_login_status();
+            //app.post_this_user_info();
             app.post_this_all_posts();
+            app.post_this_all_focus();
+            app.post_this_all_vic_focus();
             $(window).scroll(function(){
                 //变量scrollTop是滚动条滚动时，距离顶部的距离
                 var scrollTop = document.documentElement.scrollTop||document.body.scrollTop;

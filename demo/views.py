@@ -288,9 +288,8 @@ def get_reply(request):
 # 获取某人所有推文
 def get_post_poster(request):
     id = request.POST['id']
-    c = Post.objects.filter(poster_id=id).order_by('-time')
-    serializer = ReplySerializer(c)
-    j = JSONRenderer().render(serializer.data,many=True)
+    serializer = PostSerializer(Post.objects.filter(poster_id=id).order_by('-time'), many=True)
+    j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
 # 获取某人所有通知
@@ -313,17 +312,15 @@ def get_letter(request):
 # 获取某人的所有粉丝
 def get_fans(request):
     id=request.POST['id']
-    c=Focus_Rela.objects.filter(vic_focus_id=id)
-    serializer=Focus_RelaSerializer(c)
-    j = JSONRenderer().render(serializer.data, many=True)
+    serializer = Focus_RelaSerializer(Focus_Rela.objects.filter(vic_focus_id=id), many=True)
+    j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
 # 获取某人的所有关注对象
 def get_focus(request):
     id=request.POST['id']
-    c=Focus_Rela.objects.filter(focuser_id=id)
-    serializer = Focus_RelaSerializer(c)
-    j = JSONRenderer().render(serializer.data, many=True)
+    serializer = Focus_RelaSerializer(Focus_Rela.objects.filter(focuser_id=id), many=True)
+    j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
 # 获取点赞
@@ -390,6 +387,11 @@ def atisexist(request):
 # 获取准备发推文基类id
 def tmppostid(request):
     return HttpResponse(str(Base_Post.objects.last().id+1))
+
+# 个人主页跳转
+def private_index_go(request):
+    id=request.GET['id']
+    return render(request, 'private_index.html', locals())
 
 # 测试
 def lll(request):

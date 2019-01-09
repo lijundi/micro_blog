@@ -22,7 +22,7 @@
             <div class="container-fluid">
                 <ul class="navbar-nav navbar-left nav-pills">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">主页</a>
+                        <a class="nav-link active" href="#" v-on:click="private_index_go(4)">主页</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">通知</a>
@@ -293,6 +293,12 @@
                     },
                 },
                 methods: {
+                    private_index_go(id){
+                        //跳转个人主页
+                        var url="/privatego";
+                        url=url+"/?id="+id;
+                        window.location.href=url;
+                    },
                     to_signout:function(){
                         //注销
                         window.location.href='/signout';
@@ -684,5 +690,7 @@
           });
        // };
     </script>
+
+
 </body>
 </html>
