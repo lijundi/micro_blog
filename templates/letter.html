@@ -75,7 +75,7 @@
                                     </div>
                             </div>
                         </template>
-                        <!--私信模态框 daigai-->
+                        <!--私信模态框-->
                         <div class="modal fade" id="letterModal">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -97,7 +97,7 @@
                                     </div>
                                     <!-- 模态框底部 -->
                                     <div class="modal-footer">
-                                        <input type="text" v-model="letterModal.input" class="form-control">
+                                        <input type="text" v-model="letterModal.input" v-on:keyup.enter="to_send_letter()" class="form-control">
                                         <button type="button" class="btn btn-secondary" v-on:click="to_send_letter()">发送</button>
                                     </div>
                                 </div>
@@ -302,6 +302,7 @@
                         this.post_letter();
                         var l={sender: this.user_id,content: this.letterModal.input};
                         this.letterModal.letter_list_a_b.push(l);
+                        this.letterModal.input="";
                     },
                     post_letter(){
                         //发送私信

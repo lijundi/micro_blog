@@ -63,5 +63,6 @@ urlpatterns = [
     url(r'^atisexist$', views.atisexist),
     url(r'^gettmpid$', views.tmppostid),
     url(r'^getlettervic$', views.getlettervic),
+    url(r'^search$', views.search),
     url(r'^lll', views.lll),
 ]

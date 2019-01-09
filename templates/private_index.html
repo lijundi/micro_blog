@@ -101,7 +101,7 @@
                                 <template v-else>
                                     <button type="button" v-on:click="to_focus_him()" class="btn btn-info">关注</button>
                                 </template>
-                                <button type="button" v-on:click="" class="btn btn-info">私信</button>
+                                <button type="button" v-on:click="open_letterModal()" class="btn btn-info">私信</button>
                             </div>
                             </template>
                         </template>
@@ -244,6 +244,26 @@
                             </div>
                         </div>
                     </div>
+                    <!--私信模态框-->
+                    <div class="modal fade" id="letterModal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <!-- 模态框头部 -->
+                                <div class="modal-header">
+                                    <h4 class="modal-title">向{% verbatim %} {{ user_name }} {% endverbatim %}私信</h4>
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                <!-- 模态框主体 -->
+                                <div class="modal-body">
+                                    <input type="text" v-model="letter_input" class="form-control">
+                                </div>
+                                <!-- 模态框底部 -->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" v-on:click="post_letter()">发送</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-2">
                     <!--关注折叠-->
@@ -303,7 +323,8 @@
                     user_focus:[],
                     user_vic_focus:[],
                     is_focus:false,//默认没关注
-
+                    //私信
+                    letter_input:"",
                     //微博
                     posts:[],
                     lastid:"",
@@ -352,6 +373,18 @@
                     },
                 },
                 methods: {
+                    open_letterModal(){
+                        this.letter_input="";
+                        $('#letterModal').modal('show');
+                    },
+                    post_letter(){
+                        //发送私信
+                        this.$http.post('/letter',{c:this.letter_input,r:this.user_id},{emulateJSON:true}).then(function(res){
+                            $('#letterModal').modal('hide');
+                        },function(){
+                            alert("私信发送失败")
+                        });
+                    },
                     private_index_go(id){
                         //跳转个人主页
                         var url="/privatego";

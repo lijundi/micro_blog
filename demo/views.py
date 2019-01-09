@@ -512,6 +512,13 @@ def getlettervic(request):
     json_dict = {'name': c,'id':n}
     return JsonResponse(json_dict, json_dumps_params={'ensure_ascii': False})
 
+# 搜索
+def search(request):
+    w=request.POST['what']
+    serializer = PostSerializer(Post.objects.filter(content__contains=w).order_by('-time'), many=True)
+    j = JSONRenderer().render(serializer.data)
+    return HttpResponse(j, content_type="application/json")
+
 # 测试
 def lll(request):
     serializer=PostSerializer(Post.objects.get(id=4))

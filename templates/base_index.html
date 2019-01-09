@@ -97,6 +97,10 @@
 
                         </div>
                     </div>
+                    <div class="card">
+                        <input type="text" v-model="post_for_search" class="form-control" placeholder="搜索推文">
+                        <button type="button" v-on:click="to_search()" class="btn btn-primary">给我搜</button>
+                    </div>
                 </div>
                 <div class="col-md-5">
                     <div class="card">
@@ -275,6 +279,8 @@
                     //微博
                     posts:[],
                     lastid:"",
+                    //搜索
+                    post_for_search:"",
                     //模态框
                     modal:{
                         id:"",//该推文id
@@ -323,6 +329,31 @@
                     },
                 },
                 methods: {
+                    to_search(){
+                        this.posts=[];
+                        this.lastid="";
+                        this.is_new=false;
+                        this.is_hot=false;
+                        this.is_like=false;
+                        this.$http.post('/search',{what:this.post_for_search},{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            for(var p in ps){
+                                var type=this.judge_post_type(ps[p].picture);
+                                this.posts.push({
+                                    id: ps[p].id,
+                                    type:type,
+                                    content: ps[p].content,
+                                    img: ps[p].picture,
+                                    poster: ps[p].poster,
+                                    time: ps[p].time,//发布时间
+                                    like: ps[p].likes,//点赞数
+                                    reading: ps[p].hits//阅读量
+                                });
+                            }
+                        },function(){
+                            alert("搜索请求失败")
+                        });
+                    },
                     private_index_go(id){
                         //跳转个人主页
                         var url="/privatego";
@@ -413,7 +444,7 @@
                         this.$http.post('/gethotpost',json,{emulateJSON:true}).then(function(res){
                             var ps=res.body;
                             for(var p in ps){
-                                var type=this.judge_post_type(ps[p].img);
+                                var type=this.judge_post_type(ps[p].picture);
                                 this.posts.push({
                                     id: ps[p].id,
                                     type:type,
@@ -439,7 +470,7 @@
                         this.$http.post('/getlikepost',json,{emulateJSON:true}).then(function(res){
                             var ps=res.body;
                             for(var p in ps){
-                                var type=this.judge_post_type(ps[p].img);
+                                var type=this.judge_post_type(ps[p].picture);
                                 this.posts.push({
                                     id: ps[p].id,
                                     type:type,
