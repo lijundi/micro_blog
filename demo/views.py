@@ -316,7 +316,7 @@ def get_content_at(request):
     id=request.POST['id']
     at=At.objects.get(id=id)
     u=at.ater
-    x={'id':u.id,'username':u.name,'email':u.email}
+    x={'id':u.id,'username':u.username,'email':u.email}
     if(at.type=="comment"):
         c = Comment.objects.get(id=at.belongs_id).content
         json_dict = {'content': c,'person':x}
