@@ -343,34 +343,36 @@ def get_post_hot(request):
         if lastid=="":
             serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now(),poster_id=userid).order_by('-hits')[:num],many=True)
         else:
-            time = Post.objects.get(id=lastid).time
-            serializer = PostSerializer(Post.objects.filter(time__lt=time,poster_id=userid).order_by('-hits')[:num],many=True)
+            hits = Post.objects.get(id=lastid).hits
+            serializer = PostSerializer(Post.objects.filter(hits__lte=hits,poster_id=userid,time__lt=timezone.now()).order_by('-hits')[:num],many=True)
     else:
         if lastid=="":
             serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now()).order_by('-hits')[:num],many=True)
         else:
-            time = Post.objects.get(id=lastid).time
-            serializer = PostSerializer(Post.objects.filter(time__lt=time).order_by('-hits')[:num],many=True)
+            hits = Post.objects.get(id=lastid).hits
+            serializer = PostSerializer(Post.objects.filter(hits__lte=hits,time__lt=timezone.now()).order_by('-hits')[:num],many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
 # 获取最受欢迎推文
-def get_post_hot(request):
+def get_post_like(request):
     num = int(request.POST['num'])   #请求数量
     userid = request.POST['userid'] #请求指定用户的推文，为空不做限制
     lastid = request.POST['lastid'] #已加载的最后一条推文的id
     if userid!="":
         if lastid=="":
-            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now(),poster_id=userid).order_by('-likes')[:num],many=True)
+            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now(),poster_id=userid).order_by('-likes','-time')[:num],many=True)
         else:
+            likes = Post.objects.get(id=lastid).likes
             time = Post.objects.get(id=lastid).time
-            serializer = PostSerializer(Post.objects.filter(time__lt=time,poster_id=userid).order_by('-likes')[:num],many=True)
+            serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time),poster_id=userid).order_by('-likes','-time')[:num],many=True)
     else:
         if lastid=="":
-            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now()).order_by('-likes')[:num],many=True)
+            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
         else:
+            likes = Post.objects.get(id=lastid).likes
             time = Post.objects.get(id=lastid).time
-            serializer = PostSerializer(Post.objects.filter(time__lt=time).order_by('-likes')[:num],many=True)
+            serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time)).order_by('-likes','-time')[:num],many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 

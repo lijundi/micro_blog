@@ -22,7 +22,7 @@
             <div class="container-fluid">
                 <ul class="navbar-nav navbar-left nav-pills">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">主页</a>
+                        <a class="nav-link" href="#">主页</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">通知</a>
@@ -78,9 +78,9 @@
                                             <td class="text-primary">微博</td>
                                         </tr>
                                         <tr>
-                                            <td class="text-muted">{% verbatim %} {{ user_vic_focus }} {% endverbatim %}</td>
-                                            <td class="text-muted">{% verbatim %} {{ user_focus }} {% endverbatim %}</td>
-                                            <td class="text-muted">{% verbatim %} {{ user_posts }} {% endverbatim %}</td>
+                                            <td class="text-muted">{% verbatim %} {{ user_vic_focus_num }} {% endverbatim %}</td>
+                                            <td class="text-muted">{% verbatim %} {{ user_focus_num }} {% endverbatim %}</td>
+                                            <td class="text-muted">{% verbatim %} {{ user_posts_num }} {% endverbatim %}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -90,15 +90,6 @@
                     </div>
                 </div>
                 <div class="col-md-5">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="nav nav-pills">
-                                <a v-on:click="change_post_type('new')" class="nav-link" v-bind:class="{ active : is_new }" >最新</a>
-                                <a v-on:click="change_post_type('hot')" class="nav-link" v-bind:class="{ active : is_hot }" >最热</a>
-                                <a v-on:click="change_post_type('like')" class="nav-link" v-bind:class="{ active : is_like }" >最受欢迎</a>
-                            </div>
-                        </div>
-                    </div>
                     <template v-for="p in posts">
                         <div class="card">
                             <div  v-on:click="open_modal(p)" class="card-body">
@@ -239,11 +230,15 @@
                     user_password_login:'',
 
                     logined: false,//登录状态
-                    //登录用户信息
-                    user_name: '游客',
-                    user_focus: 0,
-                    user_vic_focus: 0,
-                    user_posts: 0,
+                    logined_username:"游客",
+
+                    //个人主页用户信息
+                    user_id:{{ id }},
+                    user_name: "",
+                    user_focus_num: 0,
+                    user_vic_focus_num: 0,
+                    user_posts_num: 0,
+
                     //微博
                     posts:[],
                     lastid:"",
@@ -279,16 +274,12 @@
                         allow_post:true//预留
                     },
 
-                    is_new:true,
-                    is_hot:false,
-                    is_like:false,
-                    postDone:false,//保留
                     message:''
                 },
                 watch:{
                     logined:function (nval, oval) {
                         if(nval===true){
-                            this.post_user_info();
+                            this.post_logined_user_info();
                         }
                     },
                 },
@@ -333,13 +324,9 @@
                             });
                         }
                     },
-                    post_ten_posts:function(){
-                        //获取十篇最新推文
-                        var json={};
-                        json["userid"]="";
-                        json["num"]="10";
-                        json["lastid"]=this.lastid;
-                        this.$http.post('/getpost',json,{emulateJSON:true}).then(function(res){
+                    post_this_all_posts:function(){
+                        //获取这个人的所有推文
+                        this.$http.post('/getpostposter',{id: this.user_id},{emulateJSON:true}).then(function(res){
                             var ps=res.body;
                             for(var p in ps){
                                 this.posts.push({
@@ -357,85 +344,23 @@
                             alert("推文信息请求失败")
                         });
                     },
-                    post_ten_hot_posts:function(){
-                        //获取十篇最热推文
-                        var json={};
-                        json["userid"]="";
-                        json["num"]="10";
-                        json["lastid"]=this.lastid;
-                        this.$http.post('/gethotpost',json,{emulateJSON:true}).then(function(res){
-                            var ps=res.body;
-                            for(var p in ps){
-                                this.posts.push({
-                                    id: ps[p].id,
-                                    content: ps[p].content,
-                                    img: ps[p].picture,
-                                    poster: ps[p].poster,
-                                    time: ps[p].time,//发布时间
-                                    like: ps[p].likes,//点赞数
-                                    reading: ps[p].hits//阅读量
-                                });
-                                this.lastid=ps[p].id;
-                            }
-                        },function(){
-                            alert("推文信息请求失败")
-                        });
+                    post_this_all_vic_focus(){
+                        //获取这个人的所有粉丝
+
                     },
-                    post_ten_like_posts:function(){
-                        //获取十篇最受欢迎推文
-                        var json={};
-                        json["userid"]="";
-                        json["num"]="10";
-                        json["lastid"]=this.lastid;
-                        this.$http.post('/getlikepost',json,{emulateJSON:true}).then(function(res){
-                            var ps=res.body;
-                            for(var p in ps){
-                                this.posts.push({
-                                    id: ps[p].id,
-                                    content: ps[p].content,
-                                    img: ps[p].picture,
-                                    poster: ps[p].poster,
-                                    time: ps[p].time,//发布时间
-                                    like: ps[p].likes,//点赞数
-                                    reading: ps[p].hits//阅读量
-                                });
-                                this.lastid=ps[p].id;
-                            }
-                        },function(){
-                            alert("推文信息请求失败")
-                        });
+                    post_this_all_focus(){
+                        //获取这个人的所有关注的人
+
                     },
-                    change_post_type(type){
-                        this.posts=[];
-                        this.lastid="";
-                        if(type==='new'){
-                            this.is_new=true;
-                            this.is_hot=false;
-                            this.is_like=false;
-                            this.post_ten_posts();
-                        }else if(type==='hot'){
-                            this.is_new=false;
-                            this.is_hot=true;
-                            this.is_like=false;
-                            this.post_ten_hot_posts();
-                        }else{
-                            this.is_new=false;
-                            this.is_hot=false;
-                            this.is_like=true;
-                            this.post_ten_like_posts();
-                        }
-                    },
-                    post_user_info(){
+                    post_logined_user_info(){
                         //获取登录用户信息
                         this.$http.post('/userinfo',{},{emulateJSON:true}).then(function(res){
-                            this.user_name=res.body.name;
-                            this.user_focus=res.body.guanzhu;
-                            this.user_vic_focus=res.body.fensi;
-                            this.user_posts=res.body.tuiwen;
+                            this.logined_username=res.body.name;
                         },function(){
                             alert("用户信息请求失败")
                         });
                     },
+
                     open_modal(p){
                         this.post_add_reading(p.id);
                         for(var i in this.posts){
@@ -662,7 +587,7 @@
                 }
             });
             app.post_login_status();
-            app.post_ten_posts();
+            app.post_this_all_posts();
             $(window).scroll(function(){
                 //变量scrollTop是滚动条滚动时，距离顶部的距离
                 var scrollTop = document.documentElement.scrollTop||document.body.scrollTop;
@@ -673,13 +598,7 @@
              //滚动条到底部的条件
             if(scrollTop+windowHeight>=scrollHeight){
                  //动态加载微博
-                    if(app.is_new===true){
-                        app.post_ten_posts();
-                    }else if(app.is_hot===true){
-                        app.post_ten_hot_posts();
-                    }else if(app.is_like===true){
-                        app.post_ten_like_posts();
-                    }
+                        //app.post_ten_posts();
             }   
           });
        // };
