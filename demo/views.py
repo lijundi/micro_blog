@@ -236,6 +236,20 @@ def userinfo(request):
     else:
         return HttpResponse("error")
 
+# 通过id请求用户信息
+def userinfoid(request):
+    id=request.POST['id']
+    if User.objects.filter(id=id).count()>0:
+        user = User.objects.get(id=id)
+        guanzhu = Focus_Rela.objects.filter(focuser=user).count()
+        fensi = Focus_Rela.objects.filter(vic_focus=user).count()
+        name = user.username
+        tuiwen = Post.objects.filter(poster=user).count()
+        json_dict = {'guanzhu':guanzhu,'fensi':fensi,'name':name,'tuiwen':tuiwen}
+        return JsonResponse(json_dict, json_dumps_params={'ensure_ascii': False})
+    else:
+        return HttpResponse("error")
+
 # 获取指定推文下的评论
 def get_comment_post(request):
     id=request.POST['id']
@@ -338,16 +352,31 @@ def get_post_hot(request):
     lastid = request.POST['lastid'] #已加载的最后一条推文的id
     if userid!="":
         if lastid=="":
-            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now(),poster_id=userid).order_by('-hits')[:num],many=True)
+            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now(),poster_id=userid).order_by('-hits','-time')[:num],many=True)
         else:
             hits = Post.objects.get(id=lastid).hits
-            serializer = PostSerializer(Post.objects.filter(hits__lte=hits,poster_id=userid,time__lt=timezone.now()).order_by('-hits')[:num],many=True)
+            time = Post.objects.get(id=lastid).time
+            if(Post.objects.filter(likes__lt=hits).count()==0):
+                serializer = PostSerializer(Post.objects.filter(hits__lte=hits,poster_id=userid,time__lt=time).order_by('-hits','-time')[:num],many=True)
+            else:
+                if(Post.objects.filter(hits__lt=hits,time__gt=time,poster_id=userid,time__lt=timezone.now()).count()==0):
+                    serializer = PostSerializer(Post.objects.filter(hits__lt=hits,time__lt=timezone.now(),poster_id=userid).order_by('-hits','-time')[:num],many=True)
+                else:
+                    serializer = PostSerializer(Post.objects.filter(Q(hits__lt=hits)&Q(time__gt=time),poster_id=userid,time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
+
     else:
         if lastid=="":
-            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now()).order_by('-hits')[:num],many=True)
+            serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now()).order_by('-hits','-time')[:num],many=True)
         else:
             hits = Post.objects.get(id=lastid).hits
-            serializer = PostSerializer(Post.objects.filter(hits__lte=hits,time__lt=timezone.now()).order_by('-hits')[:num],many=True)
+            time = Post.objects.get(id=lastid).time
+            if(Post.objects.filter(likes__lt=hits).count()==0):
+                serializer = PostSerializer(Post.objects.filter(hits__lte=hits,time__lt=time).order_by('-hits','-time')[:num],many=True)
+            else:
+                if(Post.objects.filter(hits__lt=hits,time__gt=time,time__lt=timezone.now()).count()==0):
+                    serializer = PostSerializer(Post.objects.filter(hits__lt=hits,time__lt=timezone.now()).order_by('-hits','-time')[:num],many=True)
+                else:
+                    serializer = PostSerializer(Post.objects.filter(hits__lt=hits,time__gt=time,time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
@@ -362,14 +391,26 @@ def get_post_like(request):
         else:
             likes = Post.objects.get(id=lastid).likes
             time = Post.objects.get(id=lastid).time
-            serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time),poster_id=userid).order_by('-likes','-time')[:num],many=True)
+            if(Post.objects.filter(likes__lt=likes).count()==0):
+                serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time),poster_id=userid).order_by('-likes','-time')[:num],many=True)
+            else:
+                if(Post.objects.filter(likes__lt=likes,time__gt=time,poster_id=userid,time__lt=timezone.now()).count()==0):
+                    serializer = PostSerializer(Post.objects.filter(likes__lt=likes,poster_id=userid,time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
+                else:
+                    serializer = PostSerializer(Post.objects.filter(Q(likes__lt=likes)&Q(time__gt=time),poster_id=userid,time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
     else:
         if lastid=="":
             serializer = PostSerializer(Post.objects.filter(time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
         else:
             likes = Post.objects.get(id=lastid).likes
             time = Post.objects.get(id=lastid).time
-            serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time)).order_by('-likes','-time')[:num],many=True)
+            if(Post.objects.filter(likes__lt=likes).count()==0):
+                serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time)).order_by('-likes','-time')[:num],many=True)
+            else:
+                if(Post.objects.filter(likes__lt=likes,time__gt=time,time__lt=timezone.now()).count()==0):
+                    serializer = PostSerializer(Post.objects.filter(likes__lt=likes,time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
+                else:
+                    serializer = PostSerializer(Post.objects.filter(Q(likes__lt=likes)&Q(time__gt=time),time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
