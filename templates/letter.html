@@ -286,16 +286,8 @@
                     },
                     to_send_letter(){
                         this.post_letter();
-                        this.letterModal.letter_list_a_b=[];
-                        this.$http.post('/getletter',{a:this.user_id,b:this.letterModal.b_id},{emulateJSON:true}).then(function(res){
-                            var ps=res.body;
-                            for(var i in ps){
-                                this.letterModal.letter_list_a_b.push(ps[i]);
-                            }
-                            $('#letterModal').modal('show');
-                        },function(){
-                            alert("私信内容请求失败")
-                        });
+                        var l={sender: this.user_id,content: this.letterModal.input};
+                        this.letterModal.letter_list_a_b.push(l);
                     },
                     post_letter(){
                         //发送私信
