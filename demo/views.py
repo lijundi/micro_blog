@@ -471,11 +471,12 @@ def getlettervic(request):
     u=request.user
     p=Letter.objects.filter(receiver=u)
     c=[]
+    n=[]
     for x in p:
         if User.objects.get(id=x.sender.id).username not in c:
             c.append(User.objects.get(id=x.sender.id).username)
-
-    json_dict = {'re': c}
+            n.append(User.objects.get(id=x.sender.id).id)
+    json_dict = {'name': c,'id':n}
     return JsonResponse(json_dict, json_dumps_params={'ensure_ascii': False})
 
 # 测试
