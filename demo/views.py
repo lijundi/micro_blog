@@ -141,7 +141,7 @@ def letter(request):
 def focus(request):
     focuser = request.user
     vic_focus = request.POST['v']
-    if(Focus_Rela.objects.create(focuser=focuser,vic_focus_id=vic_focus).count()==0):
+    if(Focus_Rela.objects.filter(focuser=focuser,vic_focus_id=vic_focus).count()==0):
         f = Focus_Rela.objects.create(focuser=focuser,vic_focus_id=vic_focus)
         f.save()
         n = Notification.objects.create(type="focus", receiver_id=vic_focus, noti_id=f.id)
@@ -149,6 +149,17 @@ def focus(request):
         return HttpResponse('ok')
     else:
         return HttpResponse('focused')
+
+# 查看是否关注过
+@login_required
+def isfocused(request):
+    id=request.POST['id']
+    u=request.user
+    if(Focus_Rela.objects.filter(vic_focus_id=id,focuser=u).count()>0):
+        return HttpResponse("yes")
+    else:
+        return HttpResponse("no")
+
 
 # 请求指定数目的推文
 def get_post_num(request):

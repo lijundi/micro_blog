@@ -22,7 +22,7 @@
             <div class="container-fluid">
                 <ul class="navbar-nav navbar-left nav-pills">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">主页</a>
+                        <a class="nav-link" href="/">主页</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">通知</a>
@@ -36,7 +36,7 @@
                 </span>
                 <template v-if="logined">
                     <ul class="navbar-nav navbar-right">
-                        <li class="navbar-text">
+                        <li class="navbar-text text-muted">
                             你好，{% verbatim %} {{ logined_username }} {% endverbatim %}&nbsp;&nbsp;&nbsp;&nbsp;
                         </li>
                         <li><button type="button" class="btn btn-primary" v-on:click="to_post()">发微博</button></li>
@@ -87,6 +87,17 @@
                                 </tbody>
                             </table>
                         </div>
+                        <template v-if="logined">
+                            <div class="card-footer">
+                                <template v-if="is_focus">
+                                    <button type="button" class="btn btn-info">已关注</button>
+                                </template>
+                                <template v-else>
+                                    <button type="button" v-on:click="to_focus_him()" class="btn btn-info">关注</button>
+                                </template>
+                                <button type="button" v-on:click="" class="btn btn-info">私信</button>
+                            </div>
+                        </template>
                     </div>
                 </div>
                 <div class="col-md-5">
@@ -213,22 +224,9 @@
                 </div>
                 <div class="col-md-2">
                     <!--关注折叠-->
-                    <!--<button class="btn btn-primary" data-toggle="collapse" data-target="#focus">关注的人</button>
-                    <div id="#focus" class="collapse">
-                        <template v-for="f in user_focus">
-                            <div>{% verbatim %} {{ f.username }} {% endverbatim %}</div>
-                        </template>
-                    </div>-->
-                    <!--粉丝折叠-->
-                    <!--<button class="btn btn-primary" data-toggle="collapse" data-target="#vic_focus">粉丝</button>
-                    <div id="#vic_focus" class="collapse">
-                        <template v-for="vf in user_vic_focus">
-                            <div>{% verbatim %} {{ vf.username }} {% endverbatim %}</div>
-                        </template>
-                    </div>-->
                     <div class="card">
                         <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" href="#collapseOne">关注的人</a>
+                            <a class="card-link" data-toggle="collapse" href="#collapseOne">关注</a>
                         </div>
                         <div id="collapseOne" class="collapse" data-parent="#accordion">
                             <div class="card-body">
@@ -238,6 +236,7 @@
                             </div>
                         </div>
                     </div>
+                    <!--粉丝折叠-->
                     <div class="card">
                         <div class="card-header">
                             <a class="card-link" data-toggle="collapse" href="#collapseTwo">粉丝</a>
@@ -280,6 +279,7 @@
                     user_posts_num: 0,
                     user_focus:[],
                     user_vic_focus:[],
+                    is_focus:false,//默认没关注
 
                     //微博
                     posts:[],
@@ -322,6 +322,7 @@
                     logined:function (nval, oval) {
                         if(nval===true){
                             this.post_logined_user_info();
+                            this.check_is_focus();//登录才去查是否关注
                         }
                     },
                 },
@@ -414,7 +415,7 @@
                     },
                     post_this_user_info(){
                         //获取个人主页用户信息
-                        this.$http.post('/',{},{emulateJSON:true}).then(function(res){
+                        this.$http.post('/userinfoid',{id:this.user_id},{emulateJSON:true}).then(function(res){
                             this.user_name=res.body.name;
                             this.user_focus_num=res.body.guanzhu;
                             this.user_vic_focus_num=res.body.fensi;
@@ -431,7 +432,27 @@
                             alert("登录用户信息请求失败")
                         });
                     },
-
+                    check_is_focus(){
+                        //判断是否关注
+                        this.$http.post('/isfocused',{id:this.user_id},{emulateJSON:true}).then(function(res){
+                            if(res.body==="yes")
+                                this.is_focus=true;
+                            else
+                                this.is_focus=false;
+                        },function(){
+                            alert("请求是否关注失败")
+                        });
+                    },
+                    to_focus_him(){
+                        //关注该用户
+                        this.$http.post('/focus',{v:this.user_id},{emulateJSON:true}).then(function(res){
+                            var url="/privatego";
+                            url=url+"/?id="+this.user_id;
+                            window.location.href=url;
+                        },function(){
+                            alert("关注失败")
+                        });
+                    },
                     open_modal(p){
                         this.post_add_reading(p.id);
                         for(var i in this.posts){
@@ -658,7 +679,8 @@
                 }
             });
             app.post_login_status();
-            //app.post_this_user_info();
+            app.check_is_focus();
+            app.post_this_user_info();
             app.post_this_all_posts();
             app.post_this_all_focus();
             app.post_this_all_vic_focus();
