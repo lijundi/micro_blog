@@ -362,6 +362,11 @@ def get_post_hot(request):
             if(Post.objects.filter(likes__lt=hits).count()==0):
                 serializer = PostSerializer(Post.objects.filter(hits__lte=hits,poster_id=userid,time__lt=time).order_by('-hits','-time')[:num],many=True)
             else:
+                if (Post.objects.filter(hits=hits,poster_id=userid, time__lt=time).count() != 0):
+                    serializer = PostSerializer(
+                        Post.objects.filter(hits=hits,poster_id=userid, time__lt=time).order_by('-hits', '-time')[:num], many=True)
+                    j = JSONRenderer().render(serializer.data)
+                    return HttpResponse(j, content_type="application/json")
                 if(Post.objects.filter(hits__lt=hits,time__gt=time,poster_id=userid,time__lt=timezone.now()).count()==0):
                     serializer = PostSerializer(Post.objects.filter(hits__lt=hits,time__lt=timezone.now(),poster_id=userid).order_by('-hits','-time')[:num],many=True)
                 else:
@@ -376,6 +381,10 @@ def get_post_hot(request):
             if(Post.objects.filter(likes__lt=hits).count()==0):
                 serializer = PostSerializer(Post.objects.filter(hits__lte=hits,time__lt=time).order_by('-hits','-time')[:num],many=True)
             else:
+                if(Post.objects.filter(hits=hits,time__lt=time).count()!=0):
+                    serializer = PostSerializer(Post.objects.filter(hits=hits,time__lt=time).order_by('-hits','-time')[:num],many=True)
+                    j = JSONRenderer().render(serializer.data)
+                    return HttpResponse(j, content_type="application/json")
                 if(Post.objects.filter(hits__lt=hits,time__gt=time,time__lt=timezone.now()).count()==0):
                     serializer = PostSerializer(Post.objects.filter(hits__lt=hits,time__lt=timezone.now()).order_by('-hits','-time')[:num],many=True)
                 else:
@@ -397,6 +406,11 @@ def get_post_like(request):
             if(Post.objects.filter(likes__lt=likes).count()==0):
                 serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time),poster_id=userid).order_by('-likes','-time')[:num],many=True)
             else:
+                if (Post.objects.filter(likes=likes,poster_id=userid, time__lt=time).count() != 0):
+                    serializer = PostSerializer(
+                        Post.objects.filter(likes=likes,poster_id=userid, time__lt=time).order_by('-likes', '-time')[:num], many=True)
+                    j = JSONRenderer().render(serializer.data)
+                    return HttpResponse(j, content_type="application/json")
                 if(Post.objects.filter(likes__lt=likes,time__gt=time,poster_id=userid,time__lt=timezone.now()).count()==0):
                     serializer = PostSerializer(Post.objects.filter(likes__lt=likes,poster_id=userid,time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
                 else:
@@ -410,6 +424,11 @@ def get_post_like(request):
             if(Post.objects.filter(likes__lt=likes).count()==0):
                 serializer = PostSerializer(Post.objects.filter(Q(likes__lte=likes)&Q(time__lt=time)).order_by('-likes','-time')[:num],many=True)
             else:
+                if (Post.objects.filter(likes=likes, time__lt=time).count() != 0):
+                    serializer = PostSerializer(
+                        Post.objects.filter(likes=likes, time__lt=time).order_by('-likes', '-time')[:num], many=True)
+                    j = JSONRenderer().render(serializer.data)
+                    return HttpResponse(j, content_type="application/json")
                 if(Post.objects.filter(likes__lt=likes,time__gt=time,time__lt=timezone.now()).count()==0):
                     serializer = PostSerializer(Post.objects.filter(likes__lt=likes,time__lt=timezone.now()).order_by('-likes','-time')[:num],many=True)
                 else:
@@ -431,6 +450,29 @@ def atisexist(request):
 # 获取准备发推文基类id
 def tmppostid(request):
     return HttpResponse(str(Base_Post.objects.last().id+1))
+
+# 获取所有私信对象
+@login_required
+def getlettervic(request):
+    u=request.user
+    p=Letter.objects.filter(receiver=u)
+    c=[]
+    for x in p:
+        if User.objects.get(id=x.sender.id).username not in c:
+            c.append(User.objects.get(id=x.sender.id).username)
+
+    json_dict = {'re': c}
+    return JsonResponse(json_dict, json_dumps_params={'ensure_ascii': False})
+
+# 查看是否关注过
+@login_required
+def isfocused(request):
+    id=request.POST['id']
+    u=request.user
+    if(Focus_Rela.objects.filter(vic_focus_id=id,focuser=u).count()>0):
+        return HttpResponse("yes")
+    else:
+        return HttpResponse("no")
 
 # 测试
 def lll(request):
