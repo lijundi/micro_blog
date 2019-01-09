@@ -22,7 +22,7 @@
             <div class="container-fluid">
                 <ul class="navbar-nav navbar-left nav-pills">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#" v-on:click="private_index_go(4)">主页</a>
+                        <a class="nav-link active" href="/" >主页</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">通知</a>
@@ -68,7 +68,14 @@
                     <div class="card">
                         <img class="card-img-top" src="/static/tou.jpg" style="width:100%">
                         <div class="card-body">
-                            <h4 class="card-title">{% verbatim %} {{ user_name }} {% endverbatim %}</h4>
+                            <h4 class="card-title">
+                                <template v-if="logined">
+                                    <a href="#" v-on:click="private_index_go(user_id)">{% verbatim %} {{ user_name }} {% endverbatim %}</a>
+                                </template>
+                                <template v-else>
+                                    {% verbatim %} {{ user_name }} {% endverbatim %}
+                                </template>
+                            </h4>
                             <template v-if="logined">
                                 <table>
                                     <tbody>
@@ -240,6 +247,7 @@
 
                     logined: false,//登录状态
                     //登录用户信息
+                    user_id:"",
                     user_name: '游客',
                     user_focus: 0,
                     user_vic_focus: 0,
@@ -434,6 +442,7 @@
                     post_user_info(){
                         //获取登录用户信息
                         this.$http.post('/userinfo',{},{emulateJSON:true}).then(function(res){
+                            this.user_id=res.body.id;
                             this.user_name=res.body.name;
                             this.user_focus=res.body.guanzhu;
                             this.user_vic_focus=res.body.fensi;

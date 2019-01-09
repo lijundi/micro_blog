@@ -241,8 +241,9 @@ def userinfo(request):
         guanzhu = Focus_Rela.objects.filter(focuser=user).count()
         fensi = Focus_Rela.objects.filter(vic_focus=user).count()
         name = user.username
+        id=user.id
         tuiwen = Post.objects.filter(poster=user).count()
-        json_dict = {'guanzhu':guanzhu,'fensi':fensi,'name':name,'tuiwen':tuiwen}
+        json_dict = {'guanzhu':guanzhu,'fensi':fensi,'name':name,'tuiwen':tuiwen,'id':id}
         return JsonResponse(json_dict, json_dumps_params={'ensure_ascii': False})
     else:
         return HttpResponse("error")
