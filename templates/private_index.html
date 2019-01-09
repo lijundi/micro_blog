@@ -113,8 +113,12 @@
                             <div  v-on:click="open_modal(p)" class="card-body">
                                 <h4><a href="#" v-on:click="private_index_go(p.poster.id)">{% verbatim %} {{ p.poster.username }} {% endverbatim %}</a></h4>
                                 <p>{% verbatim %} {{ p.time | formatDate }} {% endverbatim %}</p>
-                                <!--<img v-bind:src="p.img" style="width:100%;">-->
-                                <iframe v-bind:src="p.img" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                                <template v-if="p.type===1">
+                                    <img v-bind:src="p.img" style="width:100%;">
+                                </template>
+                                <template v-else>
+                                    <iframe v-bind:src="p.img" style="width:100%;height:350px" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                                </template>
                                 <p>{% verbatim %} {{ p.content }} {% endverbatim %}</p>
                             </div>
                             <div class="card-footer">
@@ -134,8 +138,12 @@
                                 </div>
                                 <!-- 模态框主体 -->
                                 <div class="modal-body">
-                                    <!--<img class="card-img-top" v-bind:src="modal.img" style="width:100%">-->
-                                    <iframe v-bind:src="modal.img" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                                    <template v-if="modal.type===1">
+                                        <img v-bind:src="modal.img" style="width:100%;">
+                                    </template>
+                                    <template v-else>
+                                        <iframe v-bind:src="modal.img" style="width:100%;height:300px" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                                    </template>
                                     <div>{% verbatim %} {{ modal.content }} {% endverbatim %}</div>
                                     <div>{% verbatim %} {{ modal.time | formatDate }} {% endverbatim %}</div>
                                     <div>点赞数{% verbatim %} {{ modal.likes }} {% endverbatim %}</div>
@@ -213,8 +221,12 @@
                                     <div>图片链接</div>
                                     <input type="text" v-model="postModal.img_input" class="form-control">
                                     <button type="button" class="btn" v-on:click="update_postModal_img()">更新</button>
-                                    <iframe v-bind:src="postModal.img_link" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
-                                    <!--<img class="card-img-top" v-bind:src="postModal.img_link" alt="可添加图片" style="width:100%">-->
+                                    <template v-if="postModal.type===1">
+                                        <img v-bind:src="postModal.img_link" style="width:100%;">
+                                    </template>
+                                    <template v-else>
+                                        <iframe v-bind:src="postModal.img_link" style="width:100%;height:300px" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                                    </template>
                                     <div>
                                         @
                                         <input type="text" v-model="postModal.at_input" v-on:keyup.enter="postModal_check_at_input()" class="form-control">
@@ -298,6 +310,7 @@
                     //模态框
                     modal:{
                         id:"",//该推文id
+                        type:1,
                         poster: "",
                         content:"",
                         img:"",
@@ -318,6 +331,7 @@
                     },
                     postModal:{
                         self_id:"",
+                        type:1,
                         img_input:"",
                         img_link:"",
                         at_input:"",
@@ -384,13 +398,24 @@
                             });
                         }
                     },
+                    judge_post_type(img){
+                        if(img==="")
+                            return 1;
+                        var str=img.toLowerCase();
+                        if(str.search(".jpg")!=-1||str.search(".png")!=-1||str.search(".gif")!=-1||str.search(".jpeg")!=-1){
+                            return 1;
+                        }
+                        return 2;
+                    },
                     post_this_all_posts:function(){
                         //获取这个人的所有推文
                         this.$http.post('/getpostposter',{id: this.user_id},{emulateJSON:true}).then(function(res){
                             var ps=res.body;
                             for(var p in ps){
+                                var type=this.judge_post_type(ps[p].picture);
                                 this.posts.push({
                                     id: ps[p].id,
+                                    type: type,
                                     content: ps[p].content,
                                     img: ps[p].picture,
                                     poster: ps[p].poster,
@@ -478,6 +503,7 @@
                             }
                         }
                         this.modal.id=p.id;
+                        this.modal.type=p.type;
                         this.modal.poster=p.poster;
                         this.modal.content=p.content;
                         this.modal.time=p.time;
@@ -629,6 +655,7 @@
                         this.postModal.at_input="";
                         this.postModal.at_list=[];
                         this.postModal.content="";
+                        this.postModal.type=1;
                         this.$http.post('/gettmpid',{},{emulateJSON:true}).then(function(res){
                             this.postModal.self_id=res.body;
                         },function(){
@@ -637,6 +664,7 @@
                     },
                     update_postModal_img(){
                         this.postModal.img_link=this.postModal.img_input;
+                        this.postModal.type=this.judge_post_type(this.postModal.img_link);
                     },
                     post_postModal_to_post(){
                         if(this.postModal.content==="")
@@ -696,11 +724,11 @@
                 }
             });
             app.post_login_status();
-            app.check_is_focus();
             app.post_this_user_info();
             app.post_this_all_posts();
             app.post_this_all_focus();
             app.post_this_all_vic_focus();
+            //app.check_is_focus();
             $(window).scroll(function(){
                 //变量scrollTop是滚动条滚动时，距离顶部的距离
                 var scrollTop = document.documentElement.scrollTop||document.body.scrollTop;
