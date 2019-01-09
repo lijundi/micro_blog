@@ -361,7 +361,8 @@
                     is_like:false,
                     postDone:false,//保留
                     message:'',
-                    fresh_modal:false
+                    fresh_modal:false,
+                    onlyone:true,
                 },
                 watch:{
                     logined:function (nval, oval) {
@@ -465,6 +466,7 @@
                         json["num"]="10";
                         json["lastid"]=this.lastid;
                         this.$http.post('/getpost',json,{emulateJSON:true}).then(function(res){
+                            this.onlyone=true;
                             var ps=res.body;
                             for(var p in ps){
                                 var type=this.judge_post_type(ps[p].picture);
@@ -491,6 +493,7 @@
                         json["num"]="10";
                         json["lastid"]=this.lastid;
                         this.$http.post('/gethotpost',json,{emulateJSON:true}).then(function(res){
+                            this.onlyone=true;
                             var ps=res.body;
                             for(var p in ps){
                                 var type=this.judge_post_type(ps[p].picture);
@@ -517,6 +520,7 @@
                         json["num"]="10";
                         json["lastid"]=this.lastid;
                         this.$http.post('/getlikepost',json,{emulateJSON:true}).then(function(res){
+                            this.onlyone=true;
                             var ps=res.body;
                             for(var p in ps){
                                 var type=this.judge_post_type(ps[p].picture);
@@ -811,12 +815,15 @@
              //滚动条到底部的条件
             if(scrollTop+windowHeight>=scrollHeight){
                  //动态加载微博
-                    if(app.is_new===true){
-                        app.post_ten_posts();
-                    }else if(app.is_hot===true){
-                        app.post_ten_hot_posts();
-                    }else if(app.is_like===true){
-                        app.post_ten_like_posts();
+                    if(app.onlyone===true){
+                        app.onlyone=false;
+                        if(app.is_new===true){
+                            app.post_ten_posts();
+                        }else if(app.is_hot===true){
+                            app.post_ten_hot_posts();
+                        }else if(app.is_like===true){
+                            app.post_ten_like_posts();
+                        }
                     }
             }   
           });
