@@ -49,5 +49,4 @@ urlpatterns = [
     url(r'^atisexist$', views.atisexist),
     url(r'^gettmpid$', views.tmppostid),
     url(r'^lll', views.lll),
-
 ]
