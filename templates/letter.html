@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
+    <script src="http://momentjs.cn/downloads/moment.js"></script>
+    <style>
+        body{
+            padding-top: 70px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="navbar navbar-expand-md bg-light fixed-top">
+            <div class="container-fluid">
+                <ul class="navbar-nav navbar-left nav-pills">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/" >主页</a>
+                    </li>
+                    <template v-if="logined">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/notifygo">通知</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/lettergo">私信</a>
+                    </li>
+                    </template>
+                </ul>
+                <span class="navbar-text text-muted font-weight-bold">
+                    迷你博客
+                </span>
+                <template v-if="logined">
+                    <ul class="navbar-nav navbar-right">
+                        <li><button type="button" class="btn btn-primary" v-on:click="to_post()">发微博</button></li>
+                        <li><button type="button" v-on:click="to_signout" class="btn btn-danger">注销</button></li>
+                    </ul>
+                </template>
+                <template v-else>
+                    <ul class="navbar-nav navbar-right">
+                        <li>
+                            <input type="text" v-model="user_name_login" class="form-control" placeholder="用户名">
+                        </li>
+                        <li>
+                            <input type="password" v-model="user_password_login" v-on:keyup.enter="post_to_login()" class="form-control" placeholder="密码">
+                        </li>
+                        <li>
+                            <button type="button" v-on:click="post_to_login()" class="btn btn-primary">登录</button>
+                        </li>
+                        <li>
+                            <button type="button" v-on:click="to_register()" class="btn btn-success">注册</button>
+                        </li>
+                        <li>
+                            <button type="button" v-on:click="to_forgetPassword()" class="btn">忘记密码</button>
+                        </li>
+                    </ul>
+                </template>
+            </div>
+        </div>
+        <template v-if="logined">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6">
+                        <template v-for="name in letter_list_name">
+                            <div class="card">
+                                    <div class="card-body" v-on:click="open_letter_modal(name)">
+                                        你和{% verbatim %} {{ name }} {% endverbatim %}的私信
+                                    </div>
+                            </div>
+                        </template>
+                        <!--私信模态框 daigai-->
+                        <div class="modal fade" id="letterModal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <!-- 模态框头部 -->
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">私聊中</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    </div>
+                                    <!-- 模态框主体 -->
+                                    <div class="modal-body">
+                                        <template v-for="talk in letterModal.letter_list_a_b">
+                                            <template v-if="talk.sender === user_id">
+                                                <div class="text-right">{% verbatim %} {{ talk.content }} {% endverbatim %}</div>
+                                            </template>
+                                            <template v-else>
+                                                <div class="text-left">{% verbatim %} {{ talk.content }} {% endverbatim %}</div>
+                                            </template>
+                                        </template>
+                                    </div>
+                                    <!-- 模态框底部 -->
+                                    <div class="modal-footer">
+                                        <input type="text" v-model="letterModal.input" class="form-control">
+                                        <button type="button" class="btn btn-secondary" v-on:click="to_send_letter()">发送</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--发推模态框-->
+                        <div class="modal fade" id="postModal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <!-- 模态框头部 -->
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">发微博</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    </div>
+                                    <!-- 模态框主体 -->
+                                    <div class="modal-body">
+                                        <div>图片链接</div>
+                                        <input type="text" v-model="postModal.img_input" class="form-control">
+                                        <button type="button" class="btn" v-on:click="update_postModal_img()">更新</button>
+                                        <iframe v-bind:src="postModal.img_link" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
+                                        <!--<img class="card-img-top" v-bind:src="postModal.img_link" alt="可添加图片" style="width:100%">-->
+                                        <div>
+                                            @
+                                            <input type="text" v-model="postModal.at_input" v-on:keyup.enter="postModal_check_at_input()" class="form-control">
+                                            <button type="button" class="btn" v-on:click="postModal_check_at_input()">添加</button>
+                                            <template v-for="at in postModal.at_list">
+                                                <a href="#" v-on:click="private_index_go(at.id)">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
+                                            </template>
+                                        </div>
+                                        <textarea type="text" v-model="postModal.content" class="form-control" rows="5"></textarea>
+                                    </div>
+                                    <!-- 模态框底部 -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" v-on:click="post_postModal_to_post()">发表</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+            </div>
+        </template>
+    </div>
+    <script type="text/javascript">
+        Vue.filter('formatDate', function (value) {
+            if(value){
+                return moment(String(value)).format('LLL');
+            }
+        });
+        //window.onload = function() {
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    //登录表单数据模型
+                    user_name_login:'',
+                    user_password_login:'',
+
+                    logined: false,//登录状态
+                    //登录用户信息
+                    user_id:"",
+                    user_name: '游客',
+                    //私信对象列表
+                    letter_list_id:[],
+                    letter_list_name:[],
+
+                    //模态框
+                    letterModal:{
+                        b_id:"",
+                        b_name:"",
+                        letter_list_a_b:[],
+                        input:""
+                    },
+                    postModal:{
+                        self_id:"",
+                        img_input:"",
+                        img_link:"",
+                        at_input:"",
+                        at_list:[],
+                        at:"",
+                        content:"",
+                        allow_post:true//预留
+                    },
+
+                    message:''
+                },
+                watch:{
+                    logined:function (nval, oval) {
+                        if(nval===true){
+                            this.post_user_info();
+                        }
+                    },
+                },
+                methods: {
+                    private_index_go(id){
+                        //跳转个人主页
+                        var url="/privatego";
+                        url=url+"/?id="+id;
+                        window.location.href=url;
+                    },
+                    to_signout:function(){
+                        //注销
+                        window.location.href='/signout';
+                    },
+                    to_register(){
+                        //注册
+                        window.location.href='/signup';
+                    },
+                    to_forgetPassword(){
+                        //忘记密码
+                        window.location.href='/forgetpassword';
+                    },
+                    post_login_status:function(){
+                        //请求登录状态
+                        this.$http.post('/logstatus',{},{emulateJSON:true}).then(function(res){
+                            if(res.body === "yes") this.logined=true;
+                            else this.logined=false;
+                        },function(){
+                            alert("登录状态请求失败");
+                        });
+                    },
+                    post_to_login(){
+                        //登录
+                        if(this.user_name_login===''||this.user_password_login==='')
+                            alert("登录信息不能为空！");
+                        else{
+                            var json={};//封装json
+                            json["u"]=this.user_name_login;
+                            json["p"]=this.user_password_login;
+                            this.$http.post('/signin',json,{emulateJSON:true}).then(function(res){
+                                if(res.body==="ok")this.logined=true;
+                                else{
+                                    this.logined=false;
+                                    alert("登录失败！");
+                                }
+                            },function(){
+                                alert("登录请求失败");
+                            });
+                        }
+                    },
+                    post_user_info(){
+                        //获取登录用户信息
+                        this.$http.post('/userinfo',{},{emulateJSON:true}).then(function(res){
+                            this.user_id=res.body.id;
+                            this.user_name=res.body.name;
+                        },function(){
+                            alert("用户信息请求失败")
+                        });
+                    },
+                    post_get_all_letter(){
+                        //获取所有私信对象
+                        this.$http.post('/getlettervic',{},{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            var ns=ps.name;
+                            for(var i in ns){
+                                this.letter_list_name.push(ns[i]);
+                            }
+                            var is=ps.id;
+                            for(var j in is){
+                                this.letter_list_id.push(is[j]);
+                            }
+                        },function(){
+                            alert("私信对象请求失败")
+                        });
+                    },
+                    open_letter_modal(name){
+                        var index;
+                        for(var i in this.letter_list_name){
+                            if(this.letter_list_name[i]===name){
+                                index=i;
+                                break;
+                            }
+                        }
+                        this.letterModal.b_id=this.letter_list_id[index];
+                        this.letterModal.b_name=name;
+                        this.letterModal.letter_list_a_b=[];
+                        this.$http.post('/getletter',{a:this.user_id,b:this.letterModal.b_id},{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            for(var i in ps){
+                                this.letterModal.letter_list_a_b.push(ps[i]);
+                            }
+                            $('#letterModal').modal('show');
+                        },function(){
+                            alert("私信内容请求失败")
+                        });
+                    },
+                    to_send_letter(){
+                        this.post_letter();
+                        this.letterModal.letter_list_a_b=[];
+                        this.$http.post('/getletter',{a:this.user_id,b:this.letterModal.b_id},{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            for(var i in ps){
+                                this.letterModal.letter_list_a_b.push(ps[i]);
+                            }
+                            $('#letterModal').modal('show');
+                        },function(){
+                            alert("私信内容请求失败")
+                        });
+                    },
+                    post_letter(){
+                        //发送私信
+                        this.$http.post('/letter',{c:this.letterModal.input,r:this.letterModal.b_id},{emulateJSON:true}).then(function(res){
+
+                        },function(){
+                            alert("私信发送失败")
+                        });
+                    },
+                    to_post(){
+                        //this.postModal.allow_post=true;
+                        this.postModal.img_input="";
+                        this.postModal.img_link="";
+                        this.postModal.at_input="";
+                        this.postModal.at_list=[];
+                        this.postModal.content="";
+                        this.$http.post('/gettmpid',{},{emulateJSON:true}).then(function(res){
+                            this.postModal.self_id=res.body;
+                        },function(){
+                        });
+                        $('#postModal').modal('show');
+                    },
+                    update_postModal_img(){
+                        this.postModal.img_link=this.postModal.img_input;
+                    },
+                    post_postModal_to_post(){
+                        if(this.postModal.content==="")
+                        {
+                            alert("推文内容不能为空");
+                        }
+                        else{
+                            //this.postModal.allow_post=true;
+                            //this.postModal_check_at_input();
+                            //this.postModal.at_list.push({id:3,username:"limmy",email:"tianqi218@126.com"});
+                            this.post_postModal_post();
+                            this.post_at(this.postModal.at_list,this.postModal.self_id,"post");
+                        }
+                    },
+                    postModal_check_at_input(){
+                        //检查@字符串
+                        //this.postModal.allow_post=false;
+                        //var n=this.postModal.at_input.slice(1);
+                        var n=this.postModal.at_input;
+                        for(var i in this.postModal.at_list){
+                            if(this.postModal.at_list[i].username===n){
+                                alert("已@！！！");
+                                return ;
+                            }
+                        }
+                        this.$http.post('/atisexist',{name:n},{emulateJSON:true}).then(function(res){
+                            this.postModal.at=res.body;
+                            if(this.postModal.at==="error"){
+                                alert("所@之人不存在！");
+                                //this.postModal.allow_post=false;
+                            }
+                            else{
+                                this.postModal.at_list.push(this.postModal.at);
+                            }
+                        },function(){
+
+                        });
+                    },
+                    post_postModal_post(){
+                        //发推
+                        this.$http.post('/post',{c:this.postModal.content,pic:this.postModal.img_link},{emulateJSON:true}).then(function(res){
+                            window.location.href='/';//直接刷页面
+                        },function(){
+                            alert("推文发送失败")
+                        });
+                    },
+                    post_at(at_list, belong_id, type){
+                        //发送@ type:post comment reply
+                        for(var at in at_list){
+                            this.$http.post('/at',{t:type,b:belong_id,v:at_list[at].id},{emulateJSON:true}).then(function(res){
+
+                            },function(){
+
+                            });
+                        }
+                    }
+                }
+            });
+            app.post_login_status();
+            app.post_get_all_letter();
+            $(window).scroll(function(){
+                //变量scrollTop是滚动条滚动时，距离顶部的距离
+                var scrollTop = document.documentElement.scrollTop||document.body.scrollTop;
+                //变量windowHeight是可视区的高度
+                var windowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+                //变量scrollHeight是滚动条的总高度
+                var scrollHeight = (document.documentElement.scrollHeight||document.body.scrollHeight)-1;
+             //滚动条到底部的条件
+            if(scrollTop+windowHeight>=scrollHeight){
+                 //动态加载微博
+
+            }   
+          });
+       // };
+    </script>
+
+
+</body>
+</html>

@@ -265,7 +265,7 @@ def userinfoid(request):
 # 获取指定推文下的评论
 def get_comment_post(request):
     id=request.POST['id']
-    c=Comment.objects.filter(belongs_id=id).order_by('time')
+    c=Comment.objects.filter(belongs_id=id).order_by('-time')
     serializer = CommentSerializer(c,many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
@@ -282,7 +282,7 @@ def hitpp(request):
 # 获取指定评论下的回复
 def get_reply_comment(request):
     id=request.POST['id']
-    c=Reply.objects.filter(belongs_id=id).order_by('time')
+    c=Reply.objects.filter(belongs_id=id).order_by('-time')
     serializer = ReplySerializer(c,many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
@@ -321,18 +321,16 @@ def get_post_poster(request):
 # 获取某人所有通知
 def get_noti_receiver(request):
     id = request.POST['id']
-    c = Notification.objects.filter(receiver_id=id).order_by('-id')
-    serializer = ReplySerializer(c)
-    j = JSONRenderer().render(serializer.data,many=True)
+    serializer = NotificationSerializer(Notification.objects.filter(receiver_id=id).order_by('-id'), many=True)
+    j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
 # 获取a和b私信记录
 def get_letter(request):
     a_=request.POST['a']
     b_=request.POST['b']
-    c=Letter.objects.filter(Q(sender_id=a_,receiver_id=b_)|Q(sender_id=b_,receiver_id=a_)).order_by('time')
-    serializer = ReplySerializer(c)
-    j = JSONRenderer().render(serializer.data, many=True)
+    serializer = LetterSerializer(Letter.objects.filter(Q(sender_id=a_,receiver_id=b_)|Q(sender_id=b_,receiver_id=a_)).order_by('time'), many=True)
+    j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
 # 获取某人的所有粉丝
@@ -464,6 +462,14 @@ def tmppostid(request):
 def private_index_go(request):
     id=request.GET['id']
     return render(request, 'private_index.html', locals())
+
+# 通知页面跳转
+def notify_go(request):
+    return render(request, 'notify.html')
+
+# 私信页面跳转
+def letter_go(request):
+    return render(request, 'letter.html')
 
 # 获取所有私信对象
 @login_required

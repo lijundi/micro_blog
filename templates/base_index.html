@@ -24,12 +24,14 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="/" >主页</a>
                     </li>
+                    <template v-if="logined">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">通知</a>
+                        <a class="nav-link" href="/notifygo">通知</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">私信</a>
+                        <a class="nav-link" href="/lettergo">私信</a>
                     </li>
+                    </template>
                 </ul>
                 <span class="navbar-text text-muted font-weight-bold">
                     迷你博客
@@ -100,16 +102,18 @@
                     <div class="card">
                         <div class="card-header">
                             <div class="nav nav-pills">
-                                <a v-on:click="change_post_type('new')" class="nav-link" v-bind:class="{ active : is_new }" >最新</a>
-                                <a v-on:click="change_post_type('hot')" class="nav-link" v-bind:class="{ active : is_hot }" >最热</a>
-                                <a v-on:click="change_post_type('like')" class="nav-link" v-bind:class="{ active : is_like }" >最受欢迎</a>
+                                <a href="#" v-on:click="change_post_type('new')" class="nav-link" v-bind:class="{ active : is_new }" >最新</a>
+                                <a href="#" v-on:click="change_post_type('hot')" class="nav-link" v-bind:class="{ active : is_hot }" >最热</a>
+                                <a href="#" v-on:click="change_post_type('like')" class="nav-link" v-bind:class="{ active : is_like }" >最受欢迎</a>
                             </div>
                         </div>
                     </div>
                     <template v-for="p in posts">
                         <div class="card">
                             <div  v-on:click="open_modal(p)" class="card-body">
-                                <h4>{% verbatim %} {{ p.poster.username }} {% endverbatim %}</h4>
+                                <h4>
+                                    <a href="#" v-on:click="private_index_go(p.poster.id)">{% verbatim %}  {{ p.poster.username }}  {% endverbatim %}</a>
+                                </h4>
                                 <p>{% verbatim %} {{ p.time | formatDate }} {% endverbatim %}</p>
                                 <!--<img v-bind:src="p.img" style="width:100%;">-->
                                 <iframe v-bind:src="p.img" style="width: 100%" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
@@ -127,7 +131,7 @@
                             <div class="modal-content">
                                 <!-- 模态框头部 -->
                                 <div class="modal-header">
-                                    <h4 class="modal-title">{% verbatim %} {{ modal.poster.username }} {% endverbatim %}</h4>
+                                    <h4 class="modal-title"><a href="#" v-on:click="private_index_go(modal.poster.id)">{% verbatim %} {{ modal.poster.username }} {% endverbatim %}</a></h4>
                                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                                 </div>
                                 <!-- 模态框主体 -->
@@ -143,14 +147,18 @@
                                     <!--评论-->
                                     <template v-for="comment in modal.comments">
                                         <hr>
-                                        <div>{% verbatim %} {{ comment.poster.username }} {% endverbatim %}</div>
+                                        <div><a href="#" v-on:click="private_index_go(comment.poster.id)">{% verbatim %} {{ comment.poster.username }} {% endverbatim %}</a></div>
                                         <div>{% verbatim %} {{ comment.time | formatDate }} {% endverbatim %}</div>
                                         <div>{% verbatim %} {{ comment.content }} {% endverbatim %}</div>
                                         <button v-on:click="to_reply(comment,comment.id)">回复</button>
                                         <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)">回复折叠</button>
                                         <div v-bind:id="comment.id" class="collapse">
                                             <template v-for="reply in comment.replies">
-                                            <div>{% verbatim %} {{ reply.poster.username }} {% endverbatim %}回复{% verbatim %} {{ reply.vic_reply.username }} {% endverbatim %}</div>
+                                            <div>
+                                                <a href="#" v-on:click="private_index_go(reply.poster.id)">{% verbatim %} {{ reply.poster.username }} {% endverbatim %}</a>
+                                                回复
+                                                <a href="#" v-on:click="private_index_go(reply.vic_reply.id)">{% verbatim %} {{ reply.vic_reply.username }} {% endverbatim %}</a>
+                                            </div>
                                             <div>{% verbatim %} {{ reply.time | formatDate }} {% endverbatim %}</div>
                                             <div>{% verbatim %} {{ reply.content }} {% endverbatim %}</div>
                                             <button v-on:click="to_reply(reply,comment.id)">回复</button>
@@ -181,7 +189,7 @@
                                         <input type="text" v-model="inputModal.at_input" v-on:keyup.enter="inputModal_check_at_input()" class="form-control">
                                         <button type="button" class="btn" v-on:click="inputModal_check_at_input()">添加</button>
                                         <template v-for="at in inputModal.at_list">
-                                            <a href="#">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
+                                            <a href="#" v-on:click="private_index_go(at.id)">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
                                         </template>
                                     </div>
                                     <textarea type="text" v-model="inputModal.content" class="form-control" rows="5"></textarea>
@@ -214,7 +222,7 @@
                                         <input type="text" v-model="postModal.at_input" v-on:keyup.enter="postModal_check_at_input()" class="form-control">
                                         <button type="button" class="btn" v-on:click="postModal_check_at_input()">添加</button>
                                         <template v-for="at in postModal.at_list">
-                                            <a href="#">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
+                                            <a href="#" v-on:click="private_index_go(at.id)">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
                                         </template>
                                     </div>
                                     <textarea type="text" v-model="postModal.content" class="form-control" rows="5"></textarea>
