@@ -362,7 +362,8 @@
                         allow_post:true//预留
                     },
 
-                    message:''
+                    message:'',
+                    fresh_modal:false
                 },
                 watch:{
                     logined:function (nval, oval) {
@@ -371,6 +372,13 @@
                             this.check_is_focus();//登录才去查是否关注
                         }
                     },
+                    fresh_modal: function (navl, oval) {
+                        if(navl===true){
+                            this.modal.comments=[];
+                            this.post_comments(this.modal.id);
+                            $('#inputModal').modal('hide');
+                        }
+                    }
                 },
                 methods: {
                     open_letterModal(){
@@ -592,11 +600,12 @@
                         });
                     },
                     update_modal(){
-                        this.post_comment_or_reply();
-                        this.modal.comments=[];
-                        this.post_comments(this.modal.id);
-                        this.post_at(this.inputModal.at_list,this.inputModal.self_id,this.inputModal.type);
-                        $('#inputModal').modal('hide');
+                        if(this.inputModal.content==="") {
+                            alert("提交内容不能为空！");
+                        }else{
+                            this.post_comment_or_reply();
+                            this.post_at(this.inputModal.at_list,this.inputModal.self_id,this.inputModal.type);
+                        }
                     },
                     inputModal_check_at_input(){
                         var n=this.inputModal.at_input;
@@ -622,14 +631,14 @@
                         //发评论或回复
                         if(this.inputModal.type==="comment"){
                             this.$http.post('/comment',{c:this.inputModal.content,b:this.inputModal.id},{emulateJSON:true}).then(function(res){
-
+                                this.fresh_modal=true;
                             },function(){
                                 alert("评论发送失败")
                             });
                         }
                         else{
                             this.$http.post('/reply',{c:this.inputModal.content,b:this.inputModal.id,u:this.inputModal.vic_poster.id},{emulateJSON:true}).then(function(res){
-
+                                this.fresh_modal=true;
                             },function(){
                                 alert("回复发送失败")
                             });
@@ -643,6 +652,7 @@
                         this.inputModal.at_input="";
                         this.inputModal.at_list=[];
                         this.inputModal.at="";
+                        this.fresh_modal=false;
                         this.$http.post('/gettmpid',{},{emulateJSON:true}).then(function(res){
                             this.inputModal.self_id=res.body;
                         },function(){
@@ -657,6 +667,7 @@
                         this.inputModal.at_input="";
                         this.inputModal.at_list=[];
                         this.inputModal.at="";
+                        this.fresh_modal=false;
                         this.$http.post('/gettmpid',{},{emulateJSON:true}).then(function(res){
                             this.inputModal.self_id=res.body;
                         },function(){
