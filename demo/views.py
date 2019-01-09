@@ -311,6 +311,24 @@ def get_reply(request):
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
+# 获取@内容
+def get_content_at(request):
+    id=request.POST['id']
+    at=At.objects.get(id=id)
+    u=at.ater
+    x={'id':u.id,'username':u.name,'email':u.email}
+    if(at.type=="comment"):
+        c = Comment.objects.get(id=at.belongs_id).content
+        json_dict = {'content': c,'person':x}
+    if(at.type=="reply"):
+        c = Reply.objects.get(id=at.belongs_id).content
+        json_dict = {'content': c,'person':x}
+    if(at.type=='post'):
+        c = Post.objects.get(id=at.belongs_id).content
+        json_dict = {'content': c,'person':x}
+    return JsonResponse(json_dict, json_dumps_params={'ensure_ascii': False})
+
+
 # 获取某人所有推文
 def get_post_poster(request):
     id = request.POST['id']
@@ -319,9 +337,10 @@ def get_post_poster(request):
     return HttpResponse(j, content_type="application/json")
 
 # 获取某人所有通知
+@login_required
 def get_noti_receiver(request):
-    id = request.POST['id']
-    serializer = NotificationSerializer(Notification.objects.filter(receiver_id=id).order_by('-id'), many=True)
+    u=request.user
+    serializer = NotificationSerializer(Notification.objects.filter(receiver=u).order_by('-id'), many=True)
     j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
@@ -350,9 +369,17 @@ def get_focus(request):
 # 获取点赞
 def get_like(request):
     id=request.POST['id']
-    c=Like.objects.filter(vic_like_id=id).order_by('-id')
+    c=Like.objects.get(id=id)
     serializer = LikeSerializer(c)
-    j = JSONRenderer().render(serializer.data, many=True)
+    j = JSONRenderer().render(serializer.data)
+    return HttpResponse(j, content_type="application/json")
+
+# 获取关注
+def get_focus_one(request):
+    id=request.POST['id']
+    c=Focus_Rela.objects.get(id=id)
+    serializer = Focus_RelaSerializer(c)
+    j = JSONRenderer().render(serializer.data)
     return HttpResponse(j, content_type="application/json")
 
 # 获取最热推文

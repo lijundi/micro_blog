@@ -68,9 +68,29 @@
                 <div class="row">
                     <div class="col-md-3"></div>
                     <div class="col-md-6">
-
                         <div class="card">
-
+                            <div class="card-header">
+                                <a class="card-link" data-toggle="collapse" href="#collapseOne" v-on:click="to_get_mynotify()">所有通知</a>
+                            </div>
+                            <div id="collapseOne" class="collapse" data-parent="#accordion">
+                                <div class="card-body">
+                                    <template v-for="n in mynotify">
+                                        <div>{% verbatim %} {{ n.person.username }} {% endverbatim %}
+                                            <template v-if="n.type==='at'">
+                                                @了你
+                                            </template>
+                                            <template v-else-if="n.type==='comment'">
+                                                评论了你
+                                            </template>
+                                            <template v-else-if="n.type==='reply'">
+                                                回复了你
+                                            </template>
+                                        </div>
+                                        <div>{% verbatim %} {{ n.content }} {% endverbatim %}</div>
+                                        <hr>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                         <!--发推模态框-->
                         <div class="modal fade" id="postModal">
@@ -129,6 +149,13 @@
                     //登录用户信息
                     user_id:"",
                     user_name: '游客',
+                    //通知
+                    notify:[],
+                    person:"",
+                    type:"",
+                    content:"",
+                    mynotify:[],
+
 
                     //模态框
                     postModal:{
@@ -207,7 +234,77 @@
                             alert("用户信息请求失败")
                         });
                     },
-
+                    post_get_notify(){
+                        //获取所有通知信息
+                        this.$http.post('/getnotireceiver',{},{emulateJSON:true}).then(function(res){
+                            var ps=res.body;
+                            for(var p in ps){
+                                this.notify.push(ps[p]);
+                            }
+                        },function(){
+                            alert("通知信息请求失败")
+                        });
+                    },
+                    to_get_mynotify(){
+                        this.mynotify=[];
+                        for(var i in this.notify){
+                            this.post_get_content(this.notify[i].noti_id,this.notify[i].type);
+                        }
+                    },
+                    post_get_content(id,type){
+                        //根据id和type取内容
+                        if(type==="reply"){
+                            this.$http.post('/getreply',{id:id},{emulateJSON:true}).then(function(res){
+                                this.mynotify.push({
+                                    type:"reply",
+                                    person: res.body.poster,
+                                    content: res.body.content
+                                });
+                            },function(){
+                                alert("回复请求失败")
+                            });
+                        }else if(type==="comment"){
+                            this.$http.post('/getcomment',{id:id},{emulateJSON:true}).then(function(res){
+                                this.mynotify.push({
+                                    type: "comment",
+                                    person: res.body.poster,
+                                    content: res.body.content
+                                });
+                            },function(){
+                                alert("评论请求失败")
+                            });
+                        }else if(type==="focus"){
+                            this.$http.post('/getfocusone',{id:id},{emulateJSON:true}).then(function(res){
+                                this.mynotify.push({
+                                    type:"focus",
+                                    person: res.body.focuser,
+                                    content: "关注了你！"
+                                });
+                            },function(){
+                                alert("关注请求失败")
+                            });
+                        }else if(type==="like"){
+                            this.$http.post('/getlike',{id:id},{emulateJSON:true}).then(function(res){
+                                this.mynotify.push({
+                                    type:"like",
+                                    person: res.body.liker,
+                                    content: "点赞了你！"
+                                });
+                            },function(){
+                                alert("点赞请求失败")
+                            });
+                        }else{
+                            this.$http.post('/getcontentat',{id:id},{emulateJSON:true}).then(function(res){
+                                this.mynotify.push({
+                                    type:"at",
+                                    person: res.body.person,
+                                    content: res.body.content
+                                });
+                            },function(){
+                                alert("@请求失败")
+                            });
+                        }
+                    },
                     to_post(){
                         //this.postModal.allow_post=true;
                         this.postModal.img_input="";
@@ -282,6 +379,7 @@
                 }
             });
             app.post_login_status();
+            app.post_get_notify();
 
             $(window).scroll(function(){
                 //变量scrollTop是滚动条滚动时，距离顶部的距离
