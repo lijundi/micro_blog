@@ -76,7 +76,7 @@
                             </div>
                             <div id="collapseOne" class="collapse" data-parent="#accordion">
                                 <div class="card-body">
-                                    <template v-for="n in mynotify">
+                                    <template v-for="n in mynotify" >
                                         <div>{% verbatim %} {{ n.person.username }} {% endverbatim %}
                                             <template v-if="n.type==='at'">
                                                 @了你

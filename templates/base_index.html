@@ -144,7 +144,7 @@
                                 <h4>
                                     <a href="#" v-on:click="private_index_go(p.poster.id)">{% verbatim %}  {{ p.poster.username }}  {% endverbatim %}</a>
                                 </h4>
-                                <p>{% verbatim %} {{ p.time | formatDate }} {% endverbatim %}</p>
+
                                 <template v-if="p.type===1">
                                     <img v-bind:src="p.img" style="width:100%;">
                                 </template>
@@ -152,10 +152,16 @@
                                     <iframe v-bind:src="p.img" style="width:100%;height:350px" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
                                 </template>
                                 <p>{% verbatim %} {{ p.content }} {% endverbatim %}</p>
-                            </div>
-                            <div class="card-footer">
-                                <p>点赞数{% verbatim %} {{ p.like }} {% endverbatim %}</p>
-                                <p>阅读量{% verbatim %} {{ p.reading }} {% endverbatim %}</p>
+                                <p style="position:absolute; right: 10px;">{% verbatim %} {{ p.time | formatDate }} {% endverbatim %}</p>
+                                <br>
+                                <table class="table table-bordered" >
+                                    <!-- 浏览量-->
+                                    <tr>
+                                    <th style="border-width: 1px; width: 100%;" class="text-center">
+                                        浏览{% verbatim %} {{ p.reading }} {% endverbatim %}次
+                                    </th>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
                     </template>
@@ -180,17 +186,33 @@
                                     <br>
                                     <div style="position:absolute; right: 10px;">{% verbatim %} {{ modal.time | formatDate }} {% endverbatim %}</div>
                                     <br>
-                                    <div class="modal-footer" style="height: 40px;">
-                                        <div style="position:absolute; height:30px; right: 20px;top:86%;">点赞数{% verbatim %} {{ modal.likes }} {% endverbatim %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;阅读量{% verbatim %} {{ modal.hits }} {% endverbatim %}</div>
-                                    </div>
+                                    <br>
+                                    <table class="table table-bordered" >
+                                    <!-- 浏览量-->
+                                    <tr>
+                                    <th style="border-width: 1px; width: 180px;" class="text-center">
+                                        浏览{% verbatim %} {{ modal.hits }} {% endverbatim %}次
+                                    </th>
+                                    <!-- 评论-->
+                                    <th style="border-width: 1px;width: 180px;"class="text-center">
+                                    <button v-on:click="to_comment(modal)">评论</button>
+                                    </th>
+                                    <!-- 点赞 -->
+                                    <th style="border-width: 1px;width: 180px;" class="text-center">
+                                        <button v-on:click="post_i_like()">点赞</button>
+                                    </th>
+                                    </tr>
+                                </table>
                                     <!--评论-->
                                     <template v-for="comment in modal.comments">
                                         <hr>
                                         <div><a href="#" v-on:click="private_index_go(comment.poster.id)">{% verbatim %} {{ comment.poster.username }} {% endverbatim %}</a></div>
-                                        <div>{% verbatim %} {{ comment.time | formatDate }} {% endverbatim %}</div>
+
                                         <div>{% verbatim %} {{ comment.content }} {% endverbatim %}</div>
-                                        <button v-on:click="to_reply(comment,comment.id)">回复</button>
-                                        <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)">回复折叠</button>
+                                        <br>
+                                        <div style="position:absolute; right: 10px;">{% verbatim %} {{ comment.time | formatDate }} {% endverbatim %}</div>
+                                        <button v-on:click="to_reply(comment,comment.id)" class="btn-success">回复</button>
+                                        <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)" class="btn-success">回复折叠</button>
                                         <div v-bind:id="comment.id" class="collapse">
                                             <template v-for="reply in comment.replies">
                                             <div>
@@ -198,30 +220,16 @@
                                                 回复
                                                 <a href="#" v-on:click="private_index_go(reply.vic_reply.id)">{% verbatim %} {{ reply.vic_reply.username }} {% endverbatim %}</a>
                                             </div>
-                                            <div>{% verbatim %} {{ reply.time | formatDate }} {% endverbatim %}</div>
                                             <div>{% verbatim %} {{ reply.content }} {% endverbatim %}</div>
-                                            <button v-on:click="to_reply(reply,comment.id)">回复</button>
+                                            <br>
+                                            <div style="position:absolute; right: 10px;">{% verbatim %} {{ reply.time | formatDate }} {% endverbatim %}</div>
+                                            <button v-on:click="to_reply(reply,comment.id)" class="success">回复</button>
                                             </template>
                                         </div>
                                     </template>
                                 </div>
                                 <!-- 模态框底部 -->
-                                <table>
-                                    <!-- 浏览量-->
-                                    <tr>
-                                    <th style="border-width: 10px;width: 180px;" class="text-center">
-                                        浏览{% verbatim %} {{ modal.hits }} {% endverbatim %}次
-                                    </th>
-                                    <!-- 评论-->
-                                    <th style="border-width: 10px;width: 180px;"class="text-center">
-                                    <button v-on:click="to_comment(modal)">评论</button>
-                                    </th>
-                                    <!-- 点赞 -->
-                                    <th style="border-width: 10px;width: 180px;" class="text-center">
-                                        <button v-on:click="post_i_like()">点赞</button>
-                                    </th>
-                                    </tr>
-                                </table>
+
 
                             </div>
                         </div>
