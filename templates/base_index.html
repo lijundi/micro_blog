@@ -17,25 +17,6 @@
             background-attachment: fixed;
             font-family: 楷体;
         }
-        .form-control1 {
-  display: block;
-  width: 50%;
-  height: 34px;
-            position: relative;
-  padding: 6px 12px;
-  font-size: 14px;
-  line-height: 1.42857143;
-  color: #555;
-  background-color: #fff;
-  background-image: none;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-          box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
-       -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-          transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-}
     </style>
 </head>
 <body>
@@ -215,22 +196,21 @@
                                         <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)" class="btn-success">回复折叠</button>
                                         <div v-bind:id="comment.id" class="collapse">
                                             <template v-for="reply in comment.replies">
+                                                <br>
                                             <div>
-                                                <a href="#" v-on:click="private_index_go(reply.poster.id)">{% verbatim %} {{ reply.poster.username }} {% endverbatim %}</a>
+                                                <a href="#" v-on:click="private_index_go(reply.poster.id)" >{% verbatim %} {{ reply.poster.username }} {% endverbatim %}</a>
                                                 回复
                                                 <a href="#" v-on:click="private_index_go(reply.vic_reply.id)">{% verbatim %} {{ reply.vic_reply.username }} {% endverbatim %}</a>
                                             </div>
                                             <div>{% verbatim %} {{ reply.content }} {% endverbatim %}</div>
                                             <br>
                                             <div style="position:absolute; right: 10px;">{% verbatim %} {{ reply.time | formatDate }} {% endverbatim %}</div>
-                                            <button v-on:click="to_reply(reply,comment.id)" class="success">回复</button>
+                                            <button v-on:click="to_reply(reply,comment.id)" class="btn-success">回复</button>
                                             </template>
                                         </div>
                                     </template>
                                 </div>
                                 <!-- 模态框底部 -->
-
-
                             </div>
                         </div>
                     </div>
@@ -246,13 +226,17 @@
                                 <!-- 模态框主体 -->
                                 <div class="modal-body">
                                     <div>
-                                        @
-                                        <input type="text" v-model="inputModal.at_input" v-on:keyup.enter="inputModal_check_at_input()" class="form-control">
-                                        <button type="button" class="btn" v-on:click="inputModal_check_at_input()">添加</button>
-                                        <template v-for="at in inputModal.at_list">
-                                            <a href="#" v-on:click="private_index_go(at.id)">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
-                                        </template>
+                                        <input type="text" v-model="inputModal.at_input" v-on:keyup.enter="inputModal_check_at_input()" class="form-control"  placeholder="@">
+                                        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#demo">@列表</button>
+                                        <button type="button" class="btn" v-on:click="inputModal_check_at_input()" style="position: absolute;right: 4%;">添加</button>
+
+                                        <div id="demo" class="collapse in">
+                                            <template v-for="at in inputModal.at_list">
+                                                <a href="#" v-on:click="private_index_go(at.id)">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
+                                            </template>
+                                        </div>
                                     </div>
+                                    <br>
                                     <textarea type="text" v-model="inputModal.content" class="form-control" rows="5"></textarea>
                                 </div>
                                 <!-- 模态框底部 -->
@@ -275,7 +259,8 @@
                                 <div class="modal-body">
                                     <div>图片链接</div>
                                     <input type="text" v-model="postModal.img_input" class="form-control">
-                                    <button type="button" class="btn" v-on:click="update_postModal_img()">更新</button>
+                                    <button type="button" class="btn" v-on:click="update_postModal_img()" style="position: absolute;right: 4%;">更新</button>
+                                    <br>
                                     <template v-if="postModal.type===1">
                                         <img v-bind:src="postModal.img_link" style="width:100%;">
                                     </template>
@@ -283,12 +268,14 @@
                                         <iframe v-bind:src="postModal.img_link" style="width:100%;height:300px" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
                                     </template>
                                     <div>
-                                        @
                                         <input type="text" v-model="postModal.at_input" v-on:keyup.enter="postModal_check_at_input()" class="form-control">
-                                        <button type="button" class="btn" v-on:click="postModal_check_at_input()">添加</button>
+                                        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#demo2">@列表</button>
+                                        <button type="button" class="btn" v-on:click="postModal_check_at_input()" style="position: absolute;right: 4%;">添加</button>
+                                        <div id="demo2" class="collapse in">
                                         <template v-for="at in postModal.at_list">
                                             <a href="#" v-on:click="private_index_go(at.id)">@{% verbatim %} {{ at.username }} {% endverbatim %}</a>
                                         </template>
+                                        </div>
                                     </div>
                                     <textarea type="text" v-model="postModal.content" class="form-control" rows="5"></textarea>
                                 </div>

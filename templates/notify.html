@@ -78,11 +78,6 @@
                                 <div class="card-body">
                                     <template v-for="n in mynotify" >
                                         <div>{% verbatim %} {{ n.person.username }} {% endverbatim %}
-                                            <tr {% if forloop.counter|divisibleby:"2"  %}
-                                                    class="active"
-	                                            {% else %}
-                                                    class="success"
-                                                {% endif %}  >
                                             <template v-if="n.type==='at'">
                                                 @了你
                                             </template>

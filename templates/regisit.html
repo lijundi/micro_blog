@@ -18,33 +18,45 @@
     </style>
 </head>
 <body>
-<div id="app" v-cloak>
-    <div class="navbar navbar-expand-md bg-light fixed-top">
-        <div class="container-fluid">
-            <div class="navbar-left"></div>
-            <span class="navbar-text text-muted font-weight-bold">
-                    迷你博客
-            </span>
-            <div class="navbar-right"></div>
+    <div id="app" v-cloak>
+        <div class="navbar navbar-expand-md bg-light fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-left"></div>
+                    <span class="navbar-text text-muted font-weight-bold">
+                        迷你博客
+                    </span>
+                <div class="navbar-right"></div>
+            </div>
         </div>
     </div>
-    <div class="container">
-        <div class="form-group">
-		  <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入用户名 :&nbsp </label>
-		  <input class="form-control" type="text" v-model="u"/>
-		</div>
-         <div class="form-group">
-		  <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入密码 :&nbsp </label>
-		  <input class="form-control" type="password" v-model="p"/>
-		</div>
-        <div class="form-group">
-		  <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入邮箱 :&nbsp </label>
-		  <input class="form-control" type="text" v-model="e"/>
-		</div>
-        <button class="btn btn-success" v-on:click="to_signup">注册</button>
-        <button class="btn btn-success" v-on:click="go_back">返回</button>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <label style="font-family: 'Times New Roman';  font-size:20px;"> 请输入用户名 :&nbsp </label>
+                        <input class="form-control" type="text" v-model="u"/>
+                    </div>
+                    <div class="card-body">
+                        <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入密码 :&nbsp </label>
+                        <input class="form-control" type="password" v-model="p"/>
+                    </div>
+                    <div class="card-body">
+                        <label class="control-label" style="font-family: 'Times New Roman';  font-size:20px;"> 请输入邮箱 :&nbsp </label>
+                        <input class="form-control" type="text" v-model="e"/>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-success" v-on:click="to_signup">注册</button>
+                        <button class="btn btn-success" v-on:click="go_back">返回</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
     </div>
-</div>
+</body>
 <script type="text/javascript">
 var app = new Vue({
     el: '#app',

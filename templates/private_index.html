@@ -74,15 +74,15 @@
                 <div class="col-md-3">
                     <div class="card">
                         <img class="card-img-top" src="/static/tou.jpg" style="width:100%">
-                        <div class="card-body">
+                        <div class="card-body" style="background: #47a6d9;">
                             <h4 class="card-title"><a href="#" v-on:click="private_index_go(user_id)">{% verbatim %} {{ user_name }} {% endverbatim %}</a></h4>
                             <table>
                                 <tbody>
-                                    <tr>
-                                        <td class="text-primary">粉丝</td>
-                                        <td class="text-primary">关注</td>
-                                        <td class="text-primary">微博</td>
-                                    </tr>
+                                        <tr>
+                                            <td class="text-justify">粉丝&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                            <td class="text-justify">关注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                            <td class="text-justify">微博</td>
+                                        </tr>
                                     <tr>
                                         <td class="text-muted">{% verbatim %} {{ user_vic_focus_num }} {% endverbatim %}</td>
                                         <td class="text-muted">{% verbatim %} {{ user_focus_num }} {% endverbatim %}</td>
