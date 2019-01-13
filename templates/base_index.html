@@ -193,7 +193,7 @@
                                         <br>
                                         <div style="position:absolute; right: 10px;">{% verbatim %} {{ comment.time | formatDate }} {% endverbatim %}</div>
                                         <button v-on:click="to_reply(comment,comment.id)" class="btn-success">回复</button>
-                                        <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)" class="btn-success">回复折叠</button>
+                                        <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)" class="btn-success">回复列表</button>
                                         <div v-bind:id="comment.id" class="collapse">
                                             <template v-for="reply in comment.replies">
                                                 <br>
@@ -226,7 +226,10 @@
                                 <!-- 模态框主体 -->
                                 <div class="modal-body">
                                     <div>
-                                        <input type="text" v-model="inputModal.at_input" v-on:keyup.enter="inputModal_check_at_input()" class="form-control"  placeholder="@">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">@</span>
+                                            <input type="text" v-model="inputModal.at_input" v-on:keyup.enter="inputModal_check_at_input()" class="form-control" >
+                                        </div>
                                         <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#demo">@列表</button>
                                         <button type="button" class="btn" v-on:click="inputModal_check_at_input()" style="position: absolute;right: 4%;">添加</button>
 
@@ -268,7 +271,10 @@
                                         <iframe v-bind:src="postModal.img_link" style="width:100%;height:300px" frameborder="0" allowfullscreen="allowfullscreen"></iframe>
                                     </template>
                                     <div>
-                                        <input type="text" v-model="postModal.at_input" v-on:keyup.enter="postModal_check_at_input()" class="form-control">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">@</span>
+                                            <input type="text" v-model="inputModal.at_input" v-on:keyup.enter="inputModal_check_at_input()" class="form-control" >
+                                        </div>
                                         <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#demo2">@列表</button>
                                         <button type="button" class="btn" v-on:click="postModal_check_at_input()" style="position: absolute;right: 4%;">添加</button>
                                         <div id="demo2" class="collapse in">
