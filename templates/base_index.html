@@ -195,8 +195,7 @@
                                         <button v-on:click="to_reply(comment,comment.id)" class="btn-success">回复</button>
                                         <button data-toggle="collapse" v-bind:data-target="comment.target" v-on:click="post_replies(comment)" class="btn-success">回复列表</button>
                                         <div v-bind:id="comment.id" class="collapse">
-                                            <template v-for="reply in comment.replies">
-                                                <br>
+                                            <template v-for="reply in comment.replies"><br>
                                             <div>
                                                 <a href="#" v-on:click="private_index_go(reply.poster.id)" >{% verbatim %} {{ reply.poster.username }} {% endverbatim %}</a>
                                                 回复
