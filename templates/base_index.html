@@ -66,12 +66,13 @@
                 </template>
             </div>
         </div>
+
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-1"></div>
                 <div class="col-md-3">
                     <div class="card">
-                        <img class="card-img-top" src="/static/tou.jpg" style="width:100%">
+                        <img class="card-img-top" src="/static/hearts-2.png" style="width:100%">
                         <div class="card-body" style="background: #47a6d9;">
                             <h4 class="card-title">
                                 <template v-if="logined">
@@ -176,11 +177,14 @@
                                     </th>
                                     <!-- 评论-->
                                     <th style="border-width: 1px;width: 180px;"class="text-center">
-                                    <button v-on:click="to_comment(modal)">评论</button>
+                                        <img src="/static/talk.png" v-on:click="to_comment(modal)">
+
                                     </th>
                                     <!-- 点赞 -->
                                     <th style="border-width: 1px;width: 180px;" class="text-center">
-                                        <button v-on:click="post_i_like()">点赞</button>
+
+                                        <img src="/static/hearts.png" v-on:click="post_i_like()">
+                                        点赞数
                                     </th>
                                     </tr>
                                 </table>
