@@ -91,9 +91,11 @@
                                     <div class="modal-body">
                                         <template v-for="talk in letterModal.letter_list_a_b">
                                             <template v-if="talk.sender === user_id">
+                                                <div class="text-right">{% verbatim %} {{ user_name }} {% endverbatim %}:</div>
                                                 <div class="text-right">{% verbatim %} {{ talk.content }} {% endverbatim %}</div>
                                             </template>
                                             <template v-else>
+                                                <div class="text-left">{% verbatim %} {{ letterModal.b_name }} {% endverbatim %}:</div>
                                                 <div class="text-left">{% verbatim %} {{ talk.content }} {% endverbatim %}</div>
                                             </template>
                                         </template>
@@ -101,7 +103,7 @@
                                     <!-- 模态框底部 -->
                                     <div class="modal-footer">
                                         <input type="text" v-model="letterModal.input" v-on:keyup.enter="to_send_letter()" class="form-control">
-                                        <button type="button" class="btn btn-secondary" v-on:click="to_send_letter()">发送</button>
+                                        <button type="button" class="btn btn-primary" v-on:click="to_send_letter()">发送</button>
                                     </div>
                                 </div>
                             </div>

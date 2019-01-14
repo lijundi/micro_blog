@@ -79,13 +79,19 @@
                                     <template v-for="n in mynotify" >
                                         <div>{% verbatim %} {{ n.person.username }} {% endverbatim %}
                                             <template v-if="n.type==='at'">
-                                                @了你
+                                                @了你：
                                             </template>
                                             <template v-else-if="n.type==='comment'">
-                                                评论了你
+                                                评论了你：
                                             </template>
                                             <template v-else-if="n.type==='reply'">
-                                                回复了你
+                                                回复了你：
+                                            </template>
+                                            <template v-else-if="n.type==='like'">
+                                                点赞了你！
+                                            </template>
+                                            <template v-else-if="n.type==='focus'">
+                                                关注了你！
                                             </template>
                                         </div>
                                         <div>{% verbatim %} {{ n.content }} {% endverbatim %}</div>
@@ -294,7 +300,7 @@
                                 this.mynotify.push({
                                     type:"focus",
                                     person: res.body.focuser,
-                                    content: "关注了你！"
+                                    content: ""
                                 });
                             },function(){
                                 alert("关注请求失败")
@@ -304,7 +310,7 @@
                                 this.mynotify.push({
                                     type:"like",
                                     person: res.body.liker,
-                                    content: "点赞了你！"
+                                    content: ""
                                 });
                             },function(){
                                 alert("点赞请求失败")
